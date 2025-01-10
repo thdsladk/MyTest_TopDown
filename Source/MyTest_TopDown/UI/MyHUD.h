@@ -18,6 +18,7 @@ class MYTEST_TOPDOWN_API UMyHUD : public UUserWidget
 
 public:
 	~UMyHUD();
+	virtual void NativeDestruct()override;
 public:
 	void Init();
 
@@ -112,7 +113,7 @@ private:
 	class UImage* Img_Screen1;
 
 
-	TWeakObjectPtr<UMyStatComponent> m_CurrentStatComp;
+	TWeakObjectPtr<UMyStatComponent> m_StatComp;
 	//TWeakObjectPtr<USkillComponent> m_SkillComp;	// HUD가 스킬 컴포넌트를 들고있을 이유가 없다.
 
 
@@ -123,7 +124,19 @@ private:
 
 private:		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float m_HpbarRatio = 1.f;
+	float m_PreHpRatio = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float m_PreMpRatio = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float m_PreSpRatio = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float m_CurrentHpRatio = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float m_CurrentMpRatio = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	float m_CurrentSpRatio = 1.f;
+
 
 	
 };

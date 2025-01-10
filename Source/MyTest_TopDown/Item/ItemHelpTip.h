@@ -17,8 +17,6 @@ class MYTEST_TOPDOWN_API UItemHelpTip : public UUserWidget
 public:
 	void BindHelpTip(FString Name, FString HelpTip);
 
-
-
 protected:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ItemName;

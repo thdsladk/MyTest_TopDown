@@ -17,10 +17,9 @@ public:
 	// Sets default values for this actor's properties
 	AMyInteractable();
 
-	FString GetHelpText() { return m_InteractableHelpText; }
-	bool GetInCharacter() { return m_bInCharacter; }
-
-	void SwitchVisiable() { m_bVisiable = !m_bVisiable; }
+	FORCEINLINE FString GetHelpText() { return m_InteractableHelpText; }
+	FORCEINLINE bool GetInCharacter() { return m_bInCharacter; }
+	FORCEINLINE void SwitchVisiable() { m_bVisiable = !m_bVisiable; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -53,12 +52,14 @@ protected:
 
 
 	UPROPERTY(VisibleAnywhere, Category = Interactable)
-	class UBoxComponent* m_Trigger;
+	TObjectPtr<class UBoxComponent> m_Trigger;
 	UPROPERTY(VisibleAnywhere, Category = HelpTip)
-	class UWidgetComponent* m_HelpTextComp;
+	TObjectPtr<class UWidgetComponent> m_HelpTextComp;
 	UPROPERTY(VisibleAnywhere, Category = Mesh)
-	UStaticMeshComponent* m_MeshComp;
-
+	TObjectPtr<UStaticMeshComponent> m_MeshComp;
+	UPROPERTY(VisibleAnywhere, Category = Effect)
+	TObjectPtr<class UNiagaraComponent> m_Effect;
+	//TObjectPtr<UParticleSystemComponent> m_Effect;
 
 	bool m_bVisiable;
 	bool m_bInCharacter;

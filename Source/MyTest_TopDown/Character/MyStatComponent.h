@@ -83,7 +83,7 @@ private:
 	//int32 m_Attack;					   
 	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
 	//int32 m_MaxAttack;
-
+	 
 
 	UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
 	FMyCharacterData m_BaseStat;

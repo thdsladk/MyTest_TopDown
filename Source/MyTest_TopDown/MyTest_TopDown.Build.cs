@@ -18,7 +18,11 @@ public class MyTest_TopDown : ModuleRules
 			"MyTest_TopDown/AI",
 			"MyTest_TopDown/Monster",
 			"MyTest_TopDown/Item",
-			"MyTest_TopDown/UI"
+			"MyTest_TopDown/UI",
+			"MyTest_TopDown/Data",
+			"MyTest_TopDown/Interface",
+			"MyTest_TopDown/Skill",
+			"MyTest_TopDown/Physics"
 
 		});
 	}

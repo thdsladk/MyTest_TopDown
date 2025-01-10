@@ -13,6 +13,12 @@
 UMyHUD::~UMyHUD()
 {
 	//GetWorld()->GetTimerManager().ClearTimer(m_Timer_Screen1);
+	
+}
+
+void UMyHUD::NativeDestruct()
+{
+	GetWorld()->GetTimerManager().ClearTimer(m_HpSync);
 }
 
 void UMyHUD::Init()
@@ -24,17 +30,17 @@ void UMyHUD::Init()
 	Btn_Item5->Init();
 	Btn_Item6->Init();
 
-	
+	GetWorld()->GetTimerManager().SetTimer(m_HpSync, this, &UMyHUD::Update_HpRatioSync, 0.1f, true);
 }
 
 void UMyHUD::BindHP(UMyStatComponent* StatComp)
 {
-	m_CurrentStatComp = StatComp;
+	m_StatComp = StatComp;
 	StatComp->OnHPChanged.AddUObject(this, &UMyHUD::UpdateHP);
 	StatComp->OnMPChanged.AddUObject(this, &UMyHUD::UpdateMP);
 	StatComp->OnSPChanged.AddUObject(this, &UMyHUD::UpdateSP);
 
-	m_HpbarRatio = m_CurrentStatComp->GetHPRatio();
+	m_PreHpRatio = m_StatComp->GetHPRatio();
 
 	// Screen1 Bind 
 	StatComp->OnHPChanged.AddUObject(this, &UMyHUD::UpDateScreen1);
@@ -44,46 +50,45 @@ void UMyHUD::BindHP(UMyStatComponent* StatComp)
 }
 void UMyHUD::UpdateHP()
 {
-	if (m_CurrentStatComp.IsValid())
+	if (m_StatComp.IsValid())
 	{
-		if (m_HpSync.IsValid() == false)
+		if (m_HpSync.IsValid())
 		{
-			GetWorld()->GetTimerManager().SetTimer(m_HpSync,this,&UMyHUD::Update_HpRatioSync,0.1f,true);
+			m_CurrentHpRatio = m_StatComp->GetHPRatio();
+
 		}
 	}
 }
 
 void UMyHUD::UpdateMP()
 {
-	if (m_CurrentStatComp.IsValid())
+	if (m_StatComp.IsValid())
 	{
-		ProgressBar_MP->SetPercent(m_CurrentStatComp->GetMPRatio());
+		m_CurrentMpRatio = m_StatComp->GetMPRatio();
+		ProgressBar_MP->SetPercent(m_CurrentMpRatio);
 	}
 }
 
 void UMyHUD::UpdateSP()
 {
-	if (m_CurrentStatComp.IsValid())
+	if (m_StatComp.IsValid())
 	{
-		ProgressBar_SP->SetPercent(m_CurrentStatComp->GetSPRatio());
+		m_CurrentSpRatio = m_StatComp->GetSPRatio();
+		ProgressBar_SP->SetPercent(m_CurrentSpRatio);
 	}
 }
 
 void UMyHUD::Update_HpRatioSync()
 {
-	if (m_CurrentStatComp.IsValid())
+	if (FMath::IsNearlyEqual(m_CurrentHpRatio, m_PreHpRatio, KINDA_SMALL_NUMBER) == false)
 	{
-		m_HpbarRatio += -0.001f;
-		ProgressBar_HP->SetPercent(m_HpbarRatio);
-		if (m_CurrentStatComp->GetHPRatio() >= m_HpbarRatio )
-		{
-			m_HpbarRatio = m_CurrentStatComp->GetHPRatio();
-			ProgressBar_HP->SetPercent(m_HpbarRatio);
-			GetWorld()->GetTimerManager().ClearTimer(m_HpSync);
-		}
+		m_PreHpRatio = FMath::Clamp<float>(m_PreHpRatio + (m_CurrentHpRatio - m_PreHpRatio) * 0.2f, m_CurrentHpRatio, m_PreHpRatio);
+		ProgressBar_HP->SetPercent(m_PreHpRatio);
 	}
-
-
+	else
+	{
+		UE_LOG(LogTemp,Log,TEXT(" Sync Current Hp == Pre Hp "))
+	}
 }
 
 void UMyHUD::BindSkill(USkillComponent* SkillComp)
@@ -139,9 +144,9 @@ void UMyHUD::BindScreen1()
 
 void UMyHUD::UpDateScreen1()
 {
-	if (m_CurrentStatComp.IsValid())
+	if (m_StatComp.IsValid())
 	{
-		float RatioHP = m_CurrentStatComp.Get()->GetHPRatio();
+		float RatioHP = m_StatComp.Get()->GetHPRatio();
 
 		if (
 			RatioHP < 0.5f && 

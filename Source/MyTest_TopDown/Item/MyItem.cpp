@@ -15,11 +15,11 @@
 
 // Sets default values
 AMyItem::AMyItem()
-	:m_ID(0) , m_IsGround(true) 
+	: m_IsGround(true) 
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
+	m_ItemInfo.ID = 0;
 }
 
 void AMyItem::SetItem(int32 ID)
@@ -30,36 +30,36 @@ void AMyItem::SetItem(int32 ID)
 		auto ItemData = MyGameInstance->GetItemData(ID);
 		if (ItemData != nullptr)
 		{
-			m_ID = ItemData->ID;
-			m_Type = ItemData->Type;
-			m_Name = ItemData->Name;
-			m_Desc = ItemData->Description;
-			m_MaxCount = ItemData->MaxCount;
-			m_Scale = ItemData->Scale;
-			m_EffectType = ItemData->EffectType;
-			m_EffectTime = ItemData->EffectTime;
-			m_EffectIntensity = ItemData->EffectIntensity;
+			m_ItemInfo.ID = ItemData->ID;
+			m_ItemInfo.Type = ItemData->Type;
+			m_ItemInfo.Name = ItemData->Name;
+			m_ItemInfo.Description = ItemData->Description;
+			m_ItemInfo.MaxCount = ItemData->MaxCount;
+			m_ItemInfo.Scale = ItemData->Scale;
+			m_ItemInfo.EffectType = ItemData->EffectType;
+			m_ItemInfo.EffectTime = ItemData->EffectTime;
+			m_ItemInfo.EffectIntensity = ItemData->EffectIntensity;
 
-			m_Thumbnail = ItemData->Thumbnail;
+			m_ItemInfo.Thumbnail = ItemData->Thumbnail;
 			
 			// 스테틱 메쉬 생성과정 [ 직접 경로 만들어서 붙여 주는중 ] 
-			m_ItemMesh = LoadObject<UStaticMesh>(NULL, *ItemData->ItemMesh->GetPathName() , NULL, LOAD_None, NULL);
+			m_ItemInfo.ItemMesh = LoadObject<UStaticMesh>(NULL, *ItemData->ItemMesh->GetPathName() , NULL, LOAD_None, NULL);
 			// 스테틱 메쉬 생성과정 [ 객체를 직접 복사해서 붙여 주는중 ]
 			//if (nullptr != ItemData->ItemMesh)
 			//{
 			//	DuplicateObject(ItemData->ItemMesh, m_ItemMesh);
 			//}
 
-			if (nullptr != m_ItemMesh)
+			if (nullptr != m_ItemInfo.ItemMesh)
 			{
-				m_MeshComp->SetStaticMesh(m_ItemMesh);
+				m_MeshComp->SetStaticMesh(m_ItemInfo.ItemMesh);
 				//m_MeshComp->SetCollisionProfileName(TEXT("NoCollision"));
 				m_MeshComp->SetCollisionProfileName(TEXT("PhysicsActor"));
 				m_MeshComp->SetSimulatePhysics(true);
-				m_MeshComp->SetWorldScale3D(m_MeshComp->GetComponentScale() * m_Scale);	// 스케일 두배로.
+				m_MeshComp->SetWorldScale3D(m_MeshComp->GetComponentScale() * m_ItemInfo.Scale);	// 스케일 두배로.
 			}
 			// 설명서 추가하기 . [ 아이템이 다 세팅된 다음에 해야한다.
-			m_InteractableHelpText = FString::Printf(TEXT("%s : Press F to Pick up "),*m_Name);
+			m_InteractableHelpText = FString::Printf(TEXT("%s : Press F to Pick up "),*m_ItemInfo.Name);
 
 		}
 
@@ -99,6 +99,8 @@ void AMyItem::Interact_Implementation()
 void AMyItem::OnPickedUp()
 {
 	// OFF 상태로 숨겨주기 . 
+	m_Effect->Activate(true);
+
 
 	m_IsGround = false;
 
@@ -115,7 +117,7 @@ void AMyItem::OnPickedUp()
 
 int32  AMyItem::UsingItem()
 {
-	return m_EffectType;
+	return m_ItemInfo.EffectType;
 }
 
 void AMyItem::Replace(const FVector Pos)
@@ -123,7 +125,7 @@ void AMyItem::Replace(const FVector Pos)
 	// 부모가 가지고 있는 멤버들 세팅
 	Super::Replace(Pos);
 	// 자식이 가지고 있는 멤버들 세팅
-	m_MeshComp->SetWorldScale3D(m_MeshComp->GetComponentScale() * m_Scale);	// 스케일 두배로.
+	m_MeshComp->SetWorldScale3D(m_MeshComp->GetComponentScale() * m_ItemInfo.Scale);	// 스케일 두배로.
 	m_IsGround = true;
 }
 
@@ -146,11 +148,11 @@ void AMyItem::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	SetItem(m_ID);
+	SetItem(m_ItemInfo.ID);
 
 	auto HelpWidget = Cast<UItemHelpTip>(m_HelpTextComp->GetUserWidgetObject());
 	if (HelpWidget)
-		HelpWidget->BindHelpTip(m_Name, m_InteractableHelpText);
+		HelpWidget->BindHelpTip(m_ItemInfo.Name, m_InteractableHelpText);
 
 }
 

@@ -8,6 +8,7 @@
 #include "MyHUD.h"
 #include "MyInventoryWidget.h"
 
+
 AMyTest_TopDownGameMode::AMyTest_TopDownGameMode()
 {
 	// use our custom PlayerController class
