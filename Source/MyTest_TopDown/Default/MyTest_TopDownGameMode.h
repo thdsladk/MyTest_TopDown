@@ -16,7 +16,7 @@ class AMyTest_TopDownGameMode : public AGameModeBase
 public:
 	AMyTest_TopDownGameMode();
 
-	enum EState : uint8
+	enum EHUDState : uint8
 	{
 		EIngame,
 		EInventory,
@@ -27,7 +27,7 @@ public:
 	};
 
 	UUserWidget* GetCurrentWidget() { return CurrentWidget; }
-	uint8 GetHUDState() { return m_State; }
+	uint8 GetHUDState() { return m_CharacterState; }
 	void ApplyHUDChange();
 
 	UFUNCTION(BlueprintCallable, Category = "HUD_Functions")
@@ -48,12 +48,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HUDWidgets", Meta = (BlueprintProtected = "true"))
 	TSubclassOf<UUserWidget> m_ShopWidget;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HUDWidgets", Meta = (BlueprintProtected = "true"))
+	TSubclassOf<UUserWidget> m_StatusWidget;
+
+
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HUDWidgets", Meta = (BlueprintProtected = "true"))
 	UUserWidget* CurrentWidget;
 
-	uint8 m_State = 0;
+	uint8 m_CharacterState = 0;
 };
 
 

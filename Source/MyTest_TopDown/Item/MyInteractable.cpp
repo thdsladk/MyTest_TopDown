@@ -146,7 +146,7 @@ void AMyInteractable::Init()
 	m_Trigger->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
-void AMyInteractable::Interact()
+void AMyInteractable::Click_F()
 {
 	m_Effect->Activate(true);
 }

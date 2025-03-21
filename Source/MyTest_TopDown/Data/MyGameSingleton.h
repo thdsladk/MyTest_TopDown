@@ -21,12 +21,12 @@ public:
 
 	static UMyGameSingleton& Get();
 
-	FORCEINLINE FMyCharacterData GetCharacterStat(int32 InLevel) const { return m_CharacterStatTable.IsValidIndex(InLevel - 1) ? m_CharacterStatTable[InLevel - 1] : FMyCharacterData(); }
+	FORCEINLINE FBaseStatusData GetCharacterStat(int32 InLevel) const { return m_CharacterStatTable.IsValidIndex(InLevel - 1) ? m_CharacterStatTable[InLevel - 1] : FBaseStatusData(); }
 
 	UPROPERTY()
 		int32 m_CharacterMaxLevel;
 
 
 protected:
-	TArray<FMyCharacterData> m_CharacterStatTable;
+	TArray<FBaseStatusData> m_CharacterStatTable;
 };

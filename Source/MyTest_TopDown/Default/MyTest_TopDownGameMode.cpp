@@ -7,6 +7,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "MyHUD.h"
 #include "MyInventoryWidget.h"
+#include "StatWidget.h"
 
 
 AMyTest_TopDownGameMode::AMyTest_TopDownGameMode()
@@ -58,6 +59,16 @@ AMyTest_TopDownGameMode::AMyTest_TopDownGameMode()
 		UE_LOG(LogTemp, Log, TEXT("Fail Inventory HUD"));
 	}
 
+	static ConstructorHelpers::FClassFinder<UStatWidget> Status_HUD(TEXT("/Game/TopDown/UI/BP_StatHUD.BP_StatHUD_C"));
+	if (Status_HUD.Succeeded())
+	{
+		m_StatusWidget = Status_HUD.Class;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Fail Status HUD"));
+	}
+
 }
 
 void AMyTest_TopDownGameMode::ApplyHUDChange()
@@ -67,29 +78,29 @@ void AMyTest_TopDownGameMode::ApplyHUDChange()
 		CurrentWidget->RemoveFromParent();
 	}
 
-	switch (m_State)
+	switch (m_CharacterState)
 	{
-	case EState::EIngame:
+	case EHUDState::EIngame:
 	{
 		ApplyHUD(HUD_Class, true, true);
 		break;
 	}
-	case EState::EInventory :
+	case EHUDState::EInventory :
 	{
 		ApplyHUD(m_InventoryWidget, true, true);
 		break;
 	}
-	case EState::EShop:
+	case EHUDState::EShop:
 	{
 		ApplyHUD(m_ShopWidget, true, true);
 		break;
 	}
-	case EState::EStatus:
-	{
-		ApplyHUD(HUD_Class, true, true);
+	case EHUDState::EStatus:
+	{ 
+		ApplyHUD(m_StatusWidget, true, true);
 		break;
 	}
-	case EState::ESkill:
+	case EHUDState::ESkill:
 	{
 		ApplyHUD(HUD_Class, true, true);
 		break;
@@ -101,7 +112,7 @@ void AMyTest_TopDownGameMode::ApplyHUDChange()
 
 void AMyTest_TopDownGameMode::ChangeHUDState(uint8 State)
 {
-	m_State = State;
+	m_CharacterState = State;
 	ApplyHUDChange();
 }
 
@@ -122,7 +133,7 @@ bool AMyTest_TopDownGameMode::ApplyHUD(TSubclassOf<UUserWidget> Widget, bool bSh
 		{
 			CurrentWidget->AddToViewport();
 			// Widget이 변경 될때마다 알리자 . 
-			OnHUDUpdate.Broadcast(m_State);
+			OnHUDUpdate.Broadcast(m_CharacterState);
 
 			return true;
 		}

@@ -50,7 +50,7 @@ void AMyEquipment::DetachEquip()
 	}
 }
 
-void AMyEquipment::Interact()
+void AMyEquipment::Click_F()
 {
 }
 
@@ -65,7 +65,7 @@ void AMyEquipment::Interact_Implementation()
 	}
 	else
 	{
-		Interact();
+		Click_F();
 	}
 }
 

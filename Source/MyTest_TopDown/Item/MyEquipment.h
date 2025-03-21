@@ -21,7 +21,7 @@ public:
 	void OnEquip();
 	void DetachEquip();
 
-	void Interact();
+	void Click_F();
 	virtual void Interact_Implementation();
 	virtual void OnPickedUp();
 

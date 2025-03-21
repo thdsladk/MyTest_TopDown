@@ -19,7 +19,6 @@ enum class EItemType : uint8
 	End
 };
 
-
 UCLASS()
 class MYTEST_TOPDOWN_API AMyItem : public AMyInteractable
 {
@@ -43,7 +42,7 @@ public:
 	FORCEINLINE UTexture2D* GetThumbnail() { return m_ItemInfo.Thumbnail;}
 
 	virtual void Init()override;
-	void Interact();
+	void Click_F();
 	virtual void Interact_Implementation();
 	virtual void OnPickedUp();
 	virtual int32 UsingItem()override;
@@ -69,29 +68,6 @@ protected:
 
 
 protected:
-	//// Item 고정 정보 
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//int32 m_ID;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//int32 m_Type;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//FString m_Name;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//FString m_Desc;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//int32 m_MaxCount;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//int32 m_Scale;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//int32 m_EffectType;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//int32 m_EffectTime;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//int32 m_EffectIntensity;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//UTexture2D* m_Thumbnail;
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//UStaticMesh* m_ItemMesh;
 
 	UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
 	FItemData m_ItemInfo;

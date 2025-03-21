@@ -39,7 +39,7 @@ protected:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 public:	
 	virtual void Init();
-	void Interact();
+	void Click_F();
 	virtual void Interact_Implementation();
 	virtual int32 UsingItem() { return 0; }
 	virtual void Replace(FVector Pos);
@@ -59,7 +59,6 @@ protected:
 	TObjectPtr<UStaticMeshComponent> m_MeshComp;
 	UPROPERTY(VisibleAnywhere, Category = Effect)
 	TObjectPtr<class UNiagaraComponent> m_Effect;
-	//TObjectPtr<UParticleSystemComponent> m_Effect;
 
 	bool m_bVisiable;
 	bool m_bInCharacter;

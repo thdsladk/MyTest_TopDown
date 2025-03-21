@@ -9,6 +9,7 @@
 #include "ItemHelpTip.h"
 
 #include "MyTest_TopDownCharacter.h"
+#include "NiagaraComponent.h"
 
 
 
@@ -75,7 +76,7 @@ void AMyItem::Init()
 
 }
 
-void AMyItem::Interact()
+void AMyItem::Click_F()
 {
 }
 
@@ -90,7 +91,7 @@ void AMyItem::Interact_Implementation()
 	}
 	else
 	{
-		Interact();
+		Click_F();
 
 	}
 
@@ -99,7 +100,7 @@ void AMyItem::Interact_Implementation()
 void AMyItem::OnPickedUp()
 {
 	// OFF 상태로 숨겨주기 . 
-	m_Effect->Activate(true);
+	AMyInteractable::m_Effect->Activate(true);
 
 
 	m_IsGround = false;

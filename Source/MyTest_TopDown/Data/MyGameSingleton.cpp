@@ -8,7 +8,7 @@ DEFINE_LOG_CATEGORY(LogMyGameSingleton);
 
 UMyGameSingleton::UMyGameSingleton()
 {
-	static ConstructorHelpers::FObjectFinder<UDataTable> DataTableRef(TEXT("/Game/TopDown/Data/MyCharacterData.MyCharacterData"));
+	static ConstructorHelpers::FObjectFinder<UDataTable> DataTableRef(TEXT("/Game/TopDown/Data/MyCharacterTable.MyCharacterTable")); 
 	if (nullptr != DataTableRef.Object)
 	{
 		const UDataTable* DataTable = DataTableRef.Object;
@@ -19,7 +19,7 @@ UMyGameSingleton::UMyGameSingleton()
 		Algo::Transform(ValueArray, m_CharacterStatTable,
 			[](uint8* Value)
 			{
-				return *reinterpret_cast<FMyCharacterData*>(Value);
+				return *reinterpret_cast<FBaseStatusData*>(Value);
 			}
 		);
 	}
