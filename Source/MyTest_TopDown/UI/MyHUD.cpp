@@ -10,27 +10,27 @@
 #include "MyTest_TopDownPlayerController.h"
 #include "SlotWidget.h"
 
-UMyHUD::~UMyHUD()
-{
-	//GetWorld()->GetTimerManager().ClearTimer(m_Timer_Screen1);
-	
-}
-
 void UMyHUD::NativeDestruct()
 {
+	Super::NativeDestruct();
 	GetWorld()->GetTimerManager().ClearTimer(m_HpSync);
 }
 
-void UMyHUD::Init()
+bool UMyHUD::Initialize()
 {
-	Btn_Item1->Init();
-	Btn_Item2->Init();
-	Btn_Item3->Init();
-	Btn_Item4->Init();
-	Btn_Item5->Init();
-	Btn_Item6->Init();
+	bool Result = Super::Initialize();
+
+	Btn_Item1->Initialize();
+	Btn_Item2->Initialize();
+	Btn_Item3->Initialize();
+	Btn_Item4->Initialize();
+	Btn_Item5->Initialize();
+	Btn_Item6->Initialize();
 
 	GetWorld()->GetTimerManager().SetTimer(m_HpSync, this, &UMyHUD::Update_HpRatioSync, 0.1f, true);
+
+
+	return Result;
 }
 
 void UMyHUD::BindHP(UMyStatComponent* StatComp)
@@ -48,6 +48,7 @@ void UMyHUD::BindHP(UMyStatComponent* StatComp)
 
 
 }
+
 void UMyHUD::UpdateHP()
 {
 	if (m_StatComp.IsValid())
@@ -55,8 +56,11 @@ void UMyHUD::UpdateHP()
 		if (m_HpSync.IsValid())
 		{
 			m_CurrentHpRatio = m_StatComp->GetHPRatio();
-
+			
 		}
+		// Debug
+		UE_LOG(LogTemp, Log, TEXT(" Current Hp == %f"), m_CurrentHpRatio);
+		
 	}
 }
 
@@ -80,14 +84,15 @@ void UMyHUD::UpdateSP()
 
 void UMyHUD::Update_HpRatioSync()
 {
-	if (FMath::IsNearlyEqual(m_CurrentHpRatio, m_PreHpRatio, KINDA_SMALL_NUMBER) == false)
+	if (FMath::IsNearlyEqual(m_CurrentHpRatio, m_PreHpRatio) == false)
 	{
-		m_PreHpRatio = FMath::Clamp<float>(m_PreHpRatio + (m_CurrentHpRatio - m_PreHpRatio) * 0.2f, m_CurrentHpRatio, m_PreHpRatio);
+		m_PreHpRatio = FMath::Clamp<float>(m_PreHpRatio + (m_CurrentHpRatio - m_PreHpRatio) * 0.2, m_CurrentHpRatio, m_PreHpRatio);
 		ProgressBar_HP->SetPercent(m_PreHpRatio);
 	}
 	else
 	{
-		UE_LOG(LogTemp,Log,TEXT(" Sync Current Hp == Pre Hp "))
+		// Debug
+		//UE_LOG(LogTemp,Log,TEXT(" Sync Current Hp == Pre Hp "))
 	}
 }
 
@@ -98,40 +103,36 @@ void UMyHUD::BindSkill(USkillComponent* SkillComp)
 	Btn_Skill3->OnClicked.AddDynamic(this, &UMyHUD::UpdateBtnE);
 	Btn_Skill4->OnClicked.AddDynamic(this, &UMyHUD::UpdateBtnR);
 
-	Btn_OpenChest->OnClicked.AddDynamic(this, &UMyHUD::ClickInventory);
+	Btn_OpenChest->OnClicked.AddDynamic(this, &UMyHUD::Click_Tab);
 
 	m_OnSkill.AddUObject(SkillComp, &USkillComponent::Click_Btn);
-
 
 }
 
 void UMyHUD::UpdateBtnQ()
 {
 	m_OnSkill.Broadcast(USkillComponent::ESkill::Skill_Q);
-	//m_SkillComp->Click_Q();
 }
 
 void UMyHUD::UpdateBtnW()
 {
 	m_OnSkill.Broadcast(USkillComponent::ESkill::Skill_W);
-	//m_SkillComp->Click_W();
 }
 
 void UMyHUD::UpdateBtnE()
 {
 	m_OnSkill.Broadcast(USkillComponent::ESkill::Skill_E);
-	//m_SkillComp->Click_E();
 }
 
 void UMyHUD::UpdateBtnR()
 {
 	m_OnSkill.Broadcast(USkillComponent::ESkill::Skill_R);
-	//m_SkillComp->Click_R();
 }
 
-void UMyHUD::ClickInventory()
+void UMyHUD::Click_Tab()
 {
-	Cast<AMyTest_TopDownPlayerController>(GetWorld()->GetFirstPlayerController())->Inventory_Notify.Broadcast();
+	//CastChecked<AMyTest_TopDownPlayerController>(GetWorld()->GetFirstPlayerController())->Inventory_Notify.Broadcast();
+	m_OnInven.Broadcast();
 }
 
 void UMyHUD::BindScreen1()

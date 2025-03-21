@@ -64,7 +64,8 @@ void AGhostTrail::Tick(float DeltaTime)
 
 void AGhostTrail::SetupGhostTrail(ACharacter* pCharacter)
 {
-    m_CharacterRef = pCharacter;
+    if(nullptr != pCharacter)
+        m_CharacterRef = pCharacter;
 }
 
 void AGhostTrail::BeginGhostTrailEffect()

@@ -6,7 +6,8 @@
 #include "Blueprint/UserWidget.h"
 #include "MyHUD.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnSkill, int8);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnSkill, uint8);
+DECLARE_MULTICAST_DELEGATE(FOnInventory);
 
 /**
  * 
@@ -17,19 +18,21 @@ class MYTEST_TOPDOWN_API UMyHUD : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	~UMyHUD();
 	virtual void NativeDestruct()override;
+	virtual bool Initialize() override;
+
 public:
-	void Init();
 
 	void BindHP(class UMyStatComponent* StatComp);
+	void BindSkill(class USkillComponent* SkillComp);
+	
 	void UpdateHP();
 	void UpdateMP();
 	void UpdateSP();
 
 	void Update_HpRatioSync();
 
-	void BindSkill(class USkillComponent* SkillComp);
+
 	UFUNCTION()
 	void UpdateBtnQ();
 	UFUNCTION()
@@ -40,12 +43,13 @@ public:
 	void UpdateBtnR();
 
 	UFUNCTION()
-	void ClickInventory();
+	void Click_Tab();
 
 	void BindScreen1();
 	void UpDateScreen1();
 
 	FOnSkill m_OnSkill;
+	FOnInventory m_OnInven;
 
 private:
 	UPROPERTY(meta = (BindWidget))
@@ -114,28 +118,25 @@ private:
 
 
 	TWeakObjectPtr<UMyStatComponent> m_StatComp;
-	//TWeakObjectPtr<USkillComponent> m_SkillComp;	// HUD가 스킬 컴포넌트를 들고있을 이유가 없다.
-
 
 	// Timer 
 	FTimerHandle m_Timer_Screen1;
-
 	FTimerHandle m_HpSync;
 
 private:		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float m_PreHpRatio = 1.f;
+	double m_PreHpRatio = 1.0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float m_PreMpRatio = 1.f;
+	double m_PreMpRatio = 1.0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float m_PreSpRatio = 1.f;
+	double m_PreSpRatio = 1.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float m_CurrentHpRatio = 1.f;
+	double m_CurrentHpRatio = 1.0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float m_CurrentMpRatio = 1.f;
+	double m_CurrentMpRatio = 1.0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float m_CurrentSpRatio = 1.f;
+	double m_CurrentSpRatio = 1.0;
 
 
 	
