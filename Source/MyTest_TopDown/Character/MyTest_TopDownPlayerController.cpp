@@ -12,10 +12,12 @@
 #include "MyTest_TopDownCharacter.h"
 #include "SkillComponent.h"
 
-#include "MyInventoryWidget.h"
 #include "Components/WidgetComponent.h"
+#include "MyInventoryWidget.h"
+#include "StatWidget.h"
 #include "EnhancedInputComponent.h"
 #include "MyTest_TopDownGameMode.h"
+#include "MyHUD.h"
 
 AMyTest_TopDownPlayerController::AMyTest_TopDownPlayerController()
 {
@@ -24,80 +26,21 @@ AMyTest_TopDownPlayerController::AMyTest_TopDownPlayerController()
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
 
-	SetDestinationKeyAction.Init(nullptr, static_cast<int32>(Key_End));
-
+	//SetDestinationKeyAction.Init(nullptr, static_cast<int32>(Key_End));
 
 	// 코드에서 에셋을 찾아서 호출하기 보다는 에디터에서 블루프린트로 접근해서 세팅해주자 [ 그게 더 안전 ]
-	/*
-	// Set Interact Input
-	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Interact
-	(TEXT("/Script/EnhancedInput.InputAction'/Game/TopDown/Input/Actions/IA_SetDestination_Interact.IA_SetDestination_Interact'"));
-	if (IA_Interact.Succeeded())
-		SetDestinationInteractAction = IA_Interact.Object;
+	SetDestinationKeyAction.Add(EKeys::Q, nullptr);
+	SetDestinationKeyAction.Add(EKeys::W, nullptr);
+	SetDestinationKeyAction.Add(EKeys::E, nullptr);
+	SetDestinationKeyAction.Add(EKeys::R, nullptr);
+	SetDestinationKeyAction.Add(EKeys::V, nullptr);
+	SetDestinationKeyAction.Add(EKeys::P, nullptr);
+	SetDestinationKeyAction.Add(EKeys::F, nullptr);
+	SetDestinationKeyAction.Add(EKeys::MouseWheelAxis, nullptr);
+	SetDestinationKeyAction.Add(EKeys::Tab, nullptr);
+	SetDestinationKeyAction.Add(EKeys::SpaceBar, nullptr);
+	SetDestinationKeyAction.Add(EKeys::LeftShift, nullptr);
 	
-	// Set Tab Input
-	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Tab
-	(TEXT("/Script/EnhancedInput.InputAction'/Game/TopDown/Input/Actions/IA_SetDestination_Tab.IA_SetDestination_Tab'"));
-	if (IA_Tab.Succeeded())
-		SetDestinationTabAction = IA_Tab.Object;
-	
-	
-	// Count NumberKey
-	int32 NumberKey = 0;
-	
-	// Set Key_Q Input
-	static ConstructorHelpers::FObjectFinder<UInputAction>IA_Q
-	(TEXT("/Script/EnhancedInput.InputAction'/Game/TopDown/Input/Actions/IA_SetDestination_Q.IA_SetDestination_Q'"));
-	if (IA_Q.Succeeded())
-		SetDestinationKeyAction[NumberKey++] = IA_Q.Object;
-	
-	// Set Key_W Input
-	static ConstructorHelpers::FObjectFinder<UInputAction>IA_W
-	(TEXT("/Script/EnhancedInput.InputAction'/Game/TopDown/Input/Actions/IA_SetDestination_W.IA_SetDestination_W'")); 
-	if (IA_W.Succeeded())
-		SetDestinationKeyAction[NumberKey++] = IA_W.Object;
-	
-	// Set Key_E Input
-	static ConstructorHelpers::FObjectFinder<UInputAction>IA_E
-	(TEXT("/Script/EnhancedInput.InputAction'/Game/TopDown/Input/Actions/IA_SetDestination_E.IA_SetDestination_E'"));
-	if (IA_E.Succeeded())
-		SetDestinationKeyAction[NumberKey++] = IA_E.Object;
-	
-	// Set Key_R Input
-	static ConstructorHelpers::FObjectFinder<UInputAction>IA_R
-	(TEXT("/Script/EnhancedInput.InputAction'/Game/TopDown/Input/Actions/IA_SetDestination_R.IA_SetDestination_R'"));
-	if (IA_R.Succeeded())
-		SetDestinationKeyAction[NumberKey++] = IA_R.Object;
-	
-	
-	// Set Key_V Input
-	static ConstructorHelpers::FObjectFinder<UInputAction>IA_V
-	(TEXT("/Script/EnhancedInput.InputAction'/Game/TopDown/Input/Actions/IA_SetDestination_V.IA_SetDestination_V'"));
-	if (IA_V.Succeeded())
-		SetDestinationKeyAction[NumberKey++] = IA_V.Object;
-	*/
-
-	/*
-	// 인벤토리 UI 만들어주기 .
-	static ConstructorHelpers::FClassFinder<UMyInventoryWidget> UI_Inventory(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/TopDown/UI/Inventory/WBP_MyInventoryWidget.WBP_MyInventoryWidget_C'"));
-	if (UI_Inventory.Succeeded())
-	{
-		Inventory_Class = UI_Inventory.Class;
-	
-		// Create the widget instance.
-		m_InventoryWidget = CreateWidget(GetWorld(), Inventory_Class);
-		if (m_InventoryWidget)
-		{
-			// Add the widget to the viewport so that it becomes visible on the screen.
-			//InventoryWidget->AddToViewport();
-			m_InventoryWidget->Visibility = ESlateVisibility::Hidden;
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Fail Inventory"));
-	}
-	*/
 }
 
 void AMyTest_TopDownPlayerController::BeginPlay()
@@ -136,31 +79,26 @@ void AMyTest_TopDownPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Completed, this, &AMyTest_TopDownPlayerController::OnTouchReleased);
 		EnhancedInputComponent->BindAction(SetDestinationTouchAction, ETriggerEvent::Canceled, this, &AMyTest_TopDownPlayerController::OnTouchReleased);
 
-
-		// Setup Tab/Interact input events
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_Interact], ETriggerEvent::Completed, this, &AMyTest_TopDownPlayerController::Interact);
-
-		// Setup Inventory System Key
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_Tab], ETriggerEvent::Completed, this, &AMyTest_TopDownPlayerController::ClickInventory);
-		// 0번 (Tab)키를 일시정지하여도 실행되도록 하는 flag 변수 [ 트리거 변수 체크 항목으로 대체 ]
-		//EnhancedInputComponent->GetActionBinding(9).bExecuteWhenPaused = true;
-
 		// Setup Key events
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_Q], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_Q);
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_W], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_W);
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_E], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_E);
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_R], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_R);
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_V], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_V);
-
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_Space], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_Space);
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_Space], ETriggerEvent::Completed, this, &AMyTest_TopDownPlayerController::Release_Space);
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_Shift], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_Shift);
-		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKey::Key_Shift], ETriggerEvent::Completed, this, &AMyTest_TopDownPlayerController::Release_Shift);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::Q], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_Q);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::W], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_W);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::E], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_E);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::R], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_R);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::V], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_V);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::P], ETriggerEvent::Completed, this, &AMyTest_TopDownPlayerController::Click_P);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::F], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_F);
+																	   
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::Tab], ETriggerEvent::Completed, this, &AMyTest_TopDownPlayerController::Click_Tab);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::SpaceBar], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_Space);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::SpaceBar], ETriggerEvent::Completed, this, &AMyTest_TopDownPlayerController::Release_Space);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::LeftShift], ETriggerEvent::Triggered, this, &AMyTest_TopDownPlayerController::Click_Shift);
+		EnhancedInputComponent->BindAction(SetDestinationKeyAction[EKeys::LeftShift], ETriggerEvent::Completed, this, &AMyTest_TopDownPlayerController::Release_Shift);
 
 	}
 
-	Inventory_Notify.AddUObject(this, &AMyTest_TopDownPlayerController::ClickInventory);
-
+	//Inventory_Notify.AddUObject(this, &AMyTest_TopDownPlayerController::Click_Tab);
+	AMyTest_TopDownGameMode* GameMode = CastChecked<AMyTest_TopDownGameMode>(GetWorld()->GetAuthGameMode());
+	CastChecked<UMyHUD>(GameMode->GetCurrentWidget())->m_OnInven.AddUObject(this, &AMyTest_TopDownPlayerController::Click_Tab);
 }
 
 void AMyTest_TopDownPlayerController::OnInputStarted()
@@ -233,19 +171,19 @@ void AMyTest_TopDownPlayerController::ClickRMouse()
 	MyCharacter->Attack();
 }
 
-void AMyTest_TopDownPlayerController::ClickInventory()
+void AMyTest_TopDownPlayerController::Click_Tab()
 {
 	AMyTest_TopDownGameMode* GameMode = CastChecked<AMyTest_TopDownGameMode>(GetWorld()->GetAuthGameMode());
 
-	if (GameMode->GetHUDState() == AMyTest_TopDownGameMode::EState::EInventory) // 인벤토리가 열려 있으면 
+	if (GameMode->GetHUDState() == AMyTest_TopDownGameMode::EHUDState::EInventory) // 인벤토리가 열려 있으면 
 	{
-		GameMode->ChangeHUDState(AMyTest_TopDownGameMode::EState::EIngame);
+		GameMode->ChangeHUDState(AMyTest_TopDownGameMode::EHUDState::EIngame);
 		SetPause(false);
 		
 	}
 	else						  // 인벤토리가 닫혀 있으면
 	{
-		GameMode->ChangeHUDState(AMyTest_TopDownGameMode::EState::EInventory);
+		GameMode->ChangeHUDState(AMyTest_TopDownGameMode::EHUDState::EInventory);
 		SetPause(true);
 		
 		// InventoryWidget Update Call 
@@ -258,37 +196,63 @@ void AMyTest_TopDownPlayerController::ClickInventory()
 
 }
 
-void AMyTest_TopDownPlayerController::Interact()
+void AMyTest_TopDownPlayerController::Click_F()
 {
 	//UE_LOG(LogTemp, Log, TEXT(" Interact ON "));
 
 	AMyTest_TopDownCharacter* MyCharacter = CastChecked<AMyTest_TopDownCharacter>(GetCharacter());
-	MyCharacter->Interact();
+	MyCharacter->Click_F();
+}
+
+void AMyTest_TopDownPlayerController::Click_P()
+{
+	AMyTest_TopDownGameMode* GameMode = CastChecked<AMyTest_TopDownGameMode>(GetWorld()->GetAuthGameMode());
+	
+	if (GameMode->GetHUDState() == AMyTest_TopDownGameMode::EHUDState::EStatus) // 상태창이 열려 있으면 
+	{
+		GameMode->ChangeHUDState(AMyTest_TopDownGameMode::EHUDState::EIngame);
+		SetPause(false);
+
+	}
+	else						  // 상태창이 닫혀 있으면
+	{
+		GameMode->ChangeHUDState(AMyTest_TopDownGameMode::EHUDState::EStatus);
+		SetPause(true);
+
+		// InventoryWidget Update Call 
+		//UStatWidget* StatWidget = CastChecked<UStatWidget>(GameMode->GetCurrentWidget());
+		//if (StatWidget)
+		//{
+		//	StatWidget->UpdateWidget();
+		//}
+	}
+
+
 }
 
 void AMyTest_TopDownPlayerController::Click_Q()
 {
 	AMyTest_TopDownCharacter* MyCharacter = CastChecked<AMyTest_TopDownCharacter>(GetCharacter());
-	MyCharacter->GetSkillComponent()->Click_Q();
+	MyCharacter->GetSkillComponent().Click_Q();
 	
 }
 
 void AMyTest_TopDownPlayerController::Click_W()
 {
 	AMyTest_TopDownCharacter* MyCharacter = CastChecked<AMyTest_TopDownCharacter>(GetCharacter());
-	MyCharacter->GetSkillComponent()->Click_W();
+	MyCharacter->GetSkillComponent().Click_W();
 }
 
 void AMyTest_TopDownPlayerController::Click_E()
 {
 	AMyTest_TopDownCharacter* MyCharacter = CastChecked<AMyTest_TopDownCharacter>(GetCharacter());
-	MyCharacter->GetSkillComponent()->Click_E();
+	MyCharacter->GetSkillComponent().Click_E();
 }
 
 void AMyTest_TopDownPlayerController::Click_R()
 {
 	AMyTest_TopDownCharacter* MyCharacter = CastChecked<AMyTest_TopDownCharacter>(GetCharacter());
-	MyCharacter->GetSkillComponent()->Click_R();
+	MyCharacter->GetSkillComponent().Click_R();
 }
 
 void AMyTest_TopDownPlayerController::Click_V()

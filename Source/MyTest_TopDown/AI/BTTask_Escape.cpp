@@ -3,10 +3,8 @@
 
 #include "BTTask_Escape.h"
 #include "MyAIController.h"
-#include "MyTest_TopDownCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Monster_Goblin.h"
-
+#include "GameFramework/Pawn.h"
 
 UBTTask_Escape::UBTTask_Escape()
 {
@@ -17,11 +15,11 @@ EBTNodeResult::Type UBTTask_Escape::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	auto Self = Cast<AMonster_Goblin>(OwnerComp.GetAIOwner()->GetPawn());
+	auto Self = OwnerComp.GetAIOwner()->GetPawn();
 	if (Self == nullptr)
 		return EBTNodeResult::Failed;
 
-	auto Target = Cast<AMyTest_TopDownCharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName(TEXT("Target"))));
+	auto Target = Cast<APawn>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName(TEXT("Target"))));
 	if (Target == nullptr)
 		return EBTNodeResult::Failed;
 

@@ -4,19 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-
+#include "MyGameInstance.h"
 #include "MyStatComponent.generated.h"
 
 
 DECLARE_MULTICAST_DELEGATE(FOnHPChanged);
 DECLARE_MULTICAST_DELEGATE(FOnMPChanged);
 DECLARE_MULTICAST_DELEGATE(FOnSPChanged);
-DECLARE_MULTICAST_DELEGATE(FOnSPChanged);
-
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStatChanged, const FMyCharacterData& /*BaseStat*/, const FMyCharacterData& /*ModifierStat*/);
-
-
 DECLARE_MULTICAST_DELEGATE(FOnDeathCheck);
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStatChanged, const FBaseStatusData& /*BaseStat*/, const FBaseStatusData& /*ModifierStat*/);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MYTEST_TOPDOWN_API UMyStatComponent : public UActorComponent
@@ -33,63 +31,66 @@ protected:
 	virtual void InitializeComponent() override;
 
 public:	
+	// Status Section
+	FORCEINLINE int32 GetLevel() { return m_BaseStat.Level; }
+	FORCEINLINE int32 GetAttack() { return (m_BaseStat.Attack + m_ModifierStat.Attack); }
+	FORCEINLINE const FBaseStatusData& GetBaseStat() { return m_BaseStat; };
+	FORCEINLINE	const FBaseStatusData& GetModifierStat() { return m_ModifierStat; }
+
 	void SetLevel(int32 Level);
-	void SetHP(int32 Base ,int32 Modifier = 0);
-	void SetMP(int32 Base ,int32 Modifier = 0);
-	void SetSP(int32 Base ,int32 Modifier = 0);
+	void SetBaseAttack (int32 Attack);
+	void SetModifierAttack(int32 Attack);
+	void SetBaseDefence(int32 Defence);
+	void SetModifierDefence(int32 Defence);
 
-	void OnAttacked(float DamageAmount);
+	FORCEINLINE void AddLevel(int32 Level) { SetLevel(m_BaseStat.Level + Level); }
+	FORCEINLINE void AddBaseAttack(int32 Attack) { SetBaseAttack(m_BaseStat.Attack + Attack); }
+	FORCEINLINE void AddModifierAttack(int32 Attack) { SetModifierAttack(m_ModifierStat.Attack + Attack); }
+	FORCEINLINE void AddBaseDefence(int32 Defence) { SetBaseDefence(m_BaseStat.Defence + Defence); }
+	FORCEINLINE void AddModifierDefence(int32 Defence) { SetModifierDefence(m_ModifierStat.Defence + Defence); }
 
-	int32 GetLevel() { return m_BaseStat.Level + m_ModifierStat.Level; }
-	int32 GetHP() { return m_BaseStat.HP + m_ModifierStat.HP; }
-	int32 GetMP() { return m_BaseStat.MP + m_ModifierStat.MP; }
-	int32 GetSP() { return m_BaseStat.SP + m_ModifierStat.SP; }
 
-	float GetHPRatio() { return ((m_BaseStat.HP + m_ModifierStat.HP) / static_cast<float>(m_BaseStat.MaxHP + m_ModifierStat.MaxHP)); }
-	//int32 GetHPRatio() { return ((m_HP * 100) / m_MaxHP); } // 비율을 넣으면 잡아주는 함수를 쓴다 .
-	float GetMPRatio() { return ((m_BaseStat.MP + m_ModifierStat.MP) / static_cast<float>(m_BaseStat.MaxMP + m_ModifierStat.MaxMP));}
-	float GetSPRatio() { return ((m_BaseStat.SP + m_ModifierStat.SP) / static_cast<float>(m_BaseStat.MaxSP + m_ModifierStat.MaxSP));}
+	void AddBaseStat(const FBaseStatusData& InAddBaseStat); 
+	void SetBaseStat(const FBaseStatusData& InSetBaseStat); 
+	void AddModifierStat(const FBaseStatusData& InAddModifierStat);
+	void SetModifierStat(const FBaseStatusData& InSetModifierStat);
+	
 
-	int32 GetAttack() { return m_BaseStat.Attack + m_ModifierStat.Attack; }
+	// Gauge Section 
+	FORCEINLINE const int32& GetHP() { return m_CurrentStat.HP; }
+	FORCEINLINE const int32& GetMP() { return m_CurrentStat.MP; }
+	FORCEINLINE const int32& GetSP() { return m_CurrentStat.SP; }
+	const float GetHPRatio();
+	const float GetMPRatio();
+	const float GetSPRatio();
+	
+	void SetHP(int32 HP);
+	void SetMP(int32 MP);
+	void SetSP(int32 SP);
+	FORCEINLINE void AddHP(int32 HP){ SetHP(m_CurrentStat.HP + HP); }
+	FORCEINLINE void AddMP(int32 MP){ SetMP(m_CurrentStat.MP + MP); }
+	FORCEINLINE void AddSP(int32 SP){ SetSP(m_CurrentStat.SP + SP); }
+	void OnAttacked(int32 DamageAmount);
 
-	FORCEINLINE const FMyCharacterData& GetBaseStat() { return m_BaseStat; };
-	FORCEINLINE	const FMyCharacterData& GetModifierStat() { return m_ModifierStat; }
 
-	void AddBaseStat(const FMyCharacterData& InAddBaseStat); 
-	void SetBaseStat(const FMyCharacterData& InSetBaseStat); 
+
 protected:
 
 	void Recovery_HP();
 	void Recovery_MP();
 	void Recovery_SP();
 
-private:
-	// Stat
-	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	//int32 m_Level;
-	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	//int32 m_HP;						   
-	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	//int32 m_MaxHP;					   
-	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	//int32 m_MP;						   
-	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	//int32 m_MaxMP;					   
-	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	//int32 m_SP;						   
-	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	//int32 m_MaxSP;					   
-	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	//int32 m_Attack;					   
-	//UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	//int32 m_MaxAttack;
-	 
-
+protected:
+	
+	// 두 스탯을 합치면 최대치 MaxStat ( Base + Modifier / 고정적인 수치 ) 
 	UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	FMyCharacterData m_BaseStat;
+	FBaseStatusData m_BaseStat;
 	UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
-	FMyCharacterData m_ModifierStat;
-
+	FBaseStatusData m_ModifierStat;
+	
+	// 현재 상태를 나타내는 지수		( 유동적인 수치 )
+	UPROPERTY(EditAnywhere, Category = Stat, meta = (AllowPrivateAccess = true))
+	FStatusGaugeData m_CurrentStat;
 
 
 public:

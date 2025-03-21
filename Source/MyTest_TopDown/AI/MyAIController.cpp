@@ -14,14 +14,14 @@ const FName AMyAIController::TargetKey(TEXT("Target"));
 
 AMyAIController::AMyAIController()
 {
-	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BT(TEXT("/Script/AIModule.BehaviorTree'/Game/TopDown/AI/BT_MyCharacter.BT_MyCharacter'"));
+	static ConstructorHelpers::FObjectFinder<UBehaviorTree> BT(TEXT("/Game/TopDown/AI/BT_NPC.BT_NPC"));
 	//check(BT.Succeeded())
 	if (BT.Succeeded())
 	{
 		BehaviorTree = BT.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UBlackboardData> BD(TEXT("/Script/AIModule.BlackboardData'/Game/TopDown/AI/BB_MyCharacter.BB_MyCharacter'"));
+	static ConstructorHelpers::FObjectFinder<UBlackboardData> BD(TEXT("/Game/TopDown/AI/BB_NPC.BB_NPC"));
 	//check(BD.Succeeded())
 	if (BD.Succeeded())
 	{
@@ -70,6 +70,18 @@ void AMyAIController::StopAI()
 	{
 		BehaviorTreeComponent->StopTree(EBTStopMode::Safe);
 	}
+}
+bool AMyAIController::AddCommandQueue(uint8 Command)
+{
+	return m_CommandQueue.Enqueue(Command);
+}
+bool AMyAIController::UseCommandQueue(uint8& Command)
+{
+	return m_CommandQueue.Dequeue(Command);
+}
+bool AMyAIController::IsEmptyCommandQueue()
+{
+	return m_CommandQueue.IsEmpty();
 }
 void AMyAIController::RandomMove()
 {

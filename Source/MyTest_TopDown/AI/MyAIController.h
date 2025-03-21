@@ -23,6 +23,10 @@ public:
 	void RunAI();
 	void StopAI();
 
+	bool AddCommandQueue(uint8 Command);
+	bool UseCommandQueue(uint8& Command);
+	bool IsEmptyCommandQueue();
+
 
 	static const FName HomePosKey;
 	static const FName PatrolPosKey;
@@ -36,9 +40,11 @@ private:
 
 	UPROPERTY()
 	class UBehaviorTree* BehaviorTree;
-
 	UPROPERTY()
 	class UBlackboardData* BlackboardData;
+
+protected:
+	TQueue<uint8> m_CommandQueue;
 
 
 };

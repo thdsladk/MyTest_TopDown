@@ -16,13 +16,6 @@ class MYTEST_TOPDOWN_API UBTTask_Alert : public UBTTaskNode
 public:
 	UBTTask_Alert();
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds);
-
-protected:
-	void CalBehavior();
-protected:
-	bool m_bIsAlertEnd = false;
-
 
 
 };

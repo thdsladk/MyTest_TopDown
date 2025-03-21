@@ -3,32 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
+#include "Character/CharacterBase.h"
+#include "Interface/InventoryInterface.h"
+
 #include "MyTest_TopDownCharacter.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnAttackEnd);
-DECLARE_MULTICAST_DELEGATE(FOnDeathEnd);
 
 
 
 UCLASS(Blueprintable)
-class AMyTest_TopDownCharacter : public ACharacter
+class AMyTest_TopDownCharacter : public ACharacterBase, public IInventoryInterface
 {
 	GENERATED_BODY()
-public:
-	enum EState : int8
-	{
-		Idle,
-		Walk,
-		Running,
-		Attacking,
-		Hit,
-		Stunned,
-		Casting,
-		Die,
-		End
-
-	};
 
 public:
 	AMyTest_TopDownCharacter();
@@ -47,50 +33,36 @@ public:
 	/** Returns TopDownCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetTopDownCameraComponent() const { return TopDownCameraComponent; }
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return m_CameraBoom; }
 
 // Components Part
 public:
 	class UMyInventoryComponent* GetInventoryComponent() { return m_pInventoryComp; }
-	class USkillComponent* GetSkillComponent() { return m_pSkillComp; }
-	class UMyStatComponent* GetStatComponent() { return m_pStatComp; }
+	class USkillComponent& GetSkillComponent() { return *m_pSkillComp; }
+
 
 public:
 	// Behavior Section
-	void Attack();
+	virtual void Attack()override;
 	void AttackCheck();
 	void Attack_End();
-	void Attacked();
+	virtual void OnHit()override;
+	virtual void Death()override;
 
-	void Death();
 
-	FOnAttackEnd OnAttackEnd;
-	FOnDeathEnd OnDeathEnd;
+	// ArmCamera Section 
+	void Look_UpDown(float Value);
+	void Look_LeftRight(float Value);
+	void Wheel_UpDown(float value);
 
-	// State Section
-	int8 GetState() { return m_CharacterState; }
-	void SetState(int8 State) { m_CharacterState = State; }
 
-	// Transform Section 
-	void UpDown(float Value);
-	void LeftRight(float Value);
-	void UpDown_Keyboard(float Value);
-	void LeftRight_Keyboard(float Value);
+	// Movement Function (override)
+	virtual void MoveToFoward(float Value)override;
+	virtual void MoveToRight(float Value)override;
 
-	void Yaw(float value);
-
-	UFUNCTION()
-	float GetHorizontal() { return m_LeftRightValue; }
-	UFUNCTION()
-	float GetVertical() { return m_UpDownValue; }
-
-	// Movement Section
-	UFUNCTION()
-		void Sprint();
-	UFUNCTION()
-		void SetSprint(float WalkSpeed , float CameraSpeed);
-	UFUNCTION()
-		void StopSprint();
+	virtual	void Sprint()override;
+	virtual	void SetSprint(float WalkSpeed , float CameraSpeed)override;
+	virtual	void StopSprint()override;
 	
 	// HUD Section 
 	UFUNCTION()
@@ -104,16 +76,13 @@ public:
 	UFUNCTION()
 	void OnHitMontageEnded();
 
-	// Inventory Section
-	UFUNCTION()
-	class UMyInventoryComponent* GetInventory() { return m_pInventoryComp; }
 
 	// Interact Section 
-	void Interact();
+	void Click_F();
 	void CheckForInteractable();
 
-	void UseItem(int32 Index);
-	void DropItem(int32 Index,FVector Pos = FVector(0.0,0.0,0.0));
+	virtual void UseItem(int32 Index)override;
+	virtual void DropItem(int32 Index,FVector Pos = FVector(0.0,0.0,0.0))override;
 	UFUNCTION()
 		bool HasCurrentInteractable();
 	UFUNCTION()
@@ -122,8 +91,8 @@ public:
 	
 	// Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	
-#pragma region Components
+
+#pragma region Components Member
 
 protected:
 	/** Top down camera */
@@ -131,37 +100,21 @@ protected:
 		class UCameraComponent* TopDownCameraComponent;
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class USpringArmComponent* CameraBoom;
-	UPROPERTY(VisibleAnywhere)
-		class UMyStatComponent* m_pStatComp;
-	UPROPERTY(VisibleAnywhere)
+		class USpringArmComponent* m_CameraBoom;
+	UPROPERTY(VisibleAnywhere, Category = Component)
 		class UMyInventoryComponent* m_pInventoryComp;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = Component)
 		class USkillComponent* m_pSkillComp;
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere, Category = Component)
 		class UMyAnimInstance* m_pAnimInstance;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = Component, meta = (AllowPrivateAccess = "true"))
+		class UMyEquipmentComponent* m_pEquipmentComp;
 
 
 #pragma endregion
 
 protected:
 
-	UPROPERTY()
-	int32 m_AttackIndex = 0;
-	UPROPERTY()
-	float m_UpDownValue = 0.f;
-	UPROPERTY()
-	float m_LeftRightValue = 0.f;
-
-	// Combat Stat 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	float m_AttackRange = 100.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	float m_AttackRadius = 150.f;
-
-	// FSM 
-	UPROPERTY(VisibleAnywhere, Category = "State")
-	int8 m_CharacterState = EState::Idle;
 
 	// Interactable Section
 	UPROPERTY()

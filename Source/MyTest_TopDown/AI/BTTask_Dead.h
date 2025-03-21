@@ -16,10 +16,6 @@ class MYTEST_TOPDOWN_API UBTTask_Dead : public UBTTaskNode
 public:
 
 	UBTTask_Dead();
-
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)override;
 
-	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds);
-
-	bool m_bIsDeadEnd = false;
 };

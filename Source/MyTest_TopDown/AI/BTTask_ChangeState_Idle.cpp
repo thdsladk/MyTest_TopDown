@@ -4,8 +4,8 @@
 #include "BTTask_ChangeState_Idle.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "MyAIController.h"
-#include "Monster_Goblin.h"
-#include "MyTest_TopDownCharacter.h"
+
+#include "Interface/BehaviorInterface.h"
 
 UBTTask_ChangeState_Idle::UBTTask_ChangeState_Idle()
 {
@@ -16,16 +16,11 @@ EBTNodeResult::Type UBTTask_ChangeState_Idle::ExecuteTask(UBehaviorTreeComponent
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	auto Self = Cast<AMonster_Goblin>(OwnerComp.GetAIOwner()->GetPawn());
-	if (nullptr == Self)
+	IBehaviorInterface* BI = Cast<IBehaviorInterface>(OwnerComp.GetAIOwner()->GetPawn());
+	if (nullptr == BI)
 		return EBTNodeResult::Failed;
 
-	auto Target = Cast<AMyTest_TopDownCharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName(TEXT("Target"))));
-	if (Target == nullptr)
-	{
-		Self->SetState(AMonster_Goblin::EState::Idle);
-		return Result;
-	}
+	BI->SetState(0);
 
 	return Result;
 

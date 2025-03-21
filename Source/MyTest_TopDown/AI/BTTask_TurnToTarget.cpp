@@ -4,7 +4,6 @@
 #include "BTTask_TurnToTarget.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "MyAIController.h"
-#include "MyTest_TopDownCharacter.h"
 
 
 UBTTask_TurnToTarget::UBTTask_TurnToTarget()

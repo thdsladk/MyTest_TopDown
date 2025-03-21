@@ -15,10 +15,9 @@ class MYTEST_TOPDOWN_API UBTTask_Defence : public UBTTaskNode
 	GENERATED_BODY()
 public:
 	UBTTask_Defence();
-
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)override;
-	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)override;
 
-	bool m_bIsDefense = false;
-
+private:
+	FTimerHandle m_hDuration;
+	double m_DurationTime;
 };

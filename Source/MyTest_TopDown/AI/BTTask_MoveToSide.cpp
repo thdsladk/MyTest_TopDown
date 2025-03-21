@@ -4,12 +4,16 @@
 #include "BTTask_MoveToSide.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "MyAIController.h"
-#include "Monster_Goblin.h"
 #include "Kismet/KismetMathLibrary.h"
+
+#include "Interface/BehaviorInterface.h"
 
 UBTTask_MoveToSide::UBTTask_MoveToSide()
 {
 	NodeName = TEXT("MoveToSide");
+
+
+
 }
 
 EBTNodeResult::Type UBTTask_MoveToSide::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -17,53 +21,60 @@ EBTNodeResult::Type UBTTask_MoveToSide::ExecuteTask(UBehaviorTreeComponent& Owne
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
 
-	auto Self = Cast<AMonster_Goblin>(OwnerComp.GetAIOwner()->GetPawn());
+	APawn* Self = Cast<APawn>(OwnerComp.GetAIOwner()->GetPawn());
 	if (nullptr == Self)
 		return EBTNodeResult::Failed;
 
-	auto Target = Cast<APawn>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AMyAIController::TargetKey));
+	APawn* Target = Cast<APawn>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(AMyAIController::TargetKey));
 	if (nullptr == Target)
 	{
-		Self->SetState(AMonster_Goblin::EState::Idle);
-		Self->SetMoveSpeed(600.f);
+		IBehaviorInterface* BI = CastChecked<IBehaviorInterface>(Self);
+		BI->SetState(0);
+		BI->OnIdle();
+
 		return EBTNodeResult::Failed;
 	}
 
 
-	// 랜덤 스트림 생성
-	FRandomStream RandomStream(FMath::Rand());
-	// 랜덤한 부동 소수점 수를 생성
-	float RandomFloat = RandomStream.FRandRange(-1.0f, 1.0f);
 
 
-	FVector LookVector = Target->GetActorLocation() - Self->GetActorLocation();
-	LookVector.Z = 0.0f;
+
+	// 앞에 방향을 더해줌으로 인해서 랜덤한 방향으로 흐르도록 제어
+	FVector LookVector = ( Target->GetActorLocation() - Self->GetActorLocation() );
+	double Distance = LookVector.Size();
 	LookVector.Normalize();
 	
+
+	//회전된 방향 계산
+	FVector LeftDirection = LookVector.RotateAngleAxis(-90.0f, FVector::UpVector);
+	FVector RightDirection = LookVector.RotateAngleAxis(90.0f, FVector::UpVector);
 	
-	float Angle = FMath::Acos(FVector::DotProduct(FVector(1.f,0.f,0.f), LookVector)) / PI;
+	// 두 벡터 사이의 각도 계산 (LeftDirection과 LookVector, RightDirection과 LookVector 모두 계산) 
+	float AngleLeft = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(LookVector, LeftDirection)));
+	float AngleRight = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(LookVector, RightDirection)));
 	
+	//Debug
+	//UE_LOG(LogTemp, Log, TEXT("Left Degree : %d "), AngleLeft);
+	//UE_LOG(LogTemp, Log, TEXT("Right Degree : %d "), AngleRight);
+
 	FRotator TargetRot = FRotationMatrix::MakeFromX(LookVector).Rotator();
-	TargetRot.Yaw += 90.f;
 	
-	if (LookVector.X < 0.0)
-	{
-		Self->LookDirection(Angle);
+	//Self->LookDirection(-FMath::Sign(LookVector.X) * FMath::Sign(LookVector.Y));
+	IBehaviorInterface* BI = CastChecked<IBehaviorInterface>(Self);
 	
-	}
-	else
-	{
-		Self->LookDirection(2.0-Angle);
-	}
+	BI->LookDirection(FMath::Sign(LeftDirection.Y));
 	
+	//TargetRot.Yaw += 60.f;
+
+	
+
+
 	//Self->SetActorRotation(FMath::RInterpTo(Self->GetActorRotation(), TargetRot, GetWorld()->GetDeltaSeconds(), 2.0f));
-	Self->SetActorRotation(TargetRot);
+	//Self->SetActorRotation(TargetRot);
 
-	// 이동속도 
-	Self->SetMoveSpeed(100.f);
 
-	OwnerComp.GetAIOwner()->MoveToLocation(Self->GetActorLocation() +(Self->GetActorForwardVector() * 100.f));
 
+	OwnerComp.GetAIOwner()->MoveToLocation(Self->GetActorLocation() +(LeftDirection * Distance));
 
 	return EBTNodeResult::Succeeded;
 }

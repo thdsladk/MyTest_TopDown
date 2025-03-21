@@ -3,10 +3,8 @@
 
 #include "BTDecorator_CanAttack.h"
 #include "MyAIController.h"
-#include "MyTest_TopDownCharacter.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
-#include "Monster_Goblin.h"
 
 UBTDecorator_CanAttack::UBTDecorator_CanAttack()
 {
@@ -17,15 +15,16 @@ bool UBTDecorator_CanAttack::CalculateRawConditionValue(UBehaviorTreeComponent& 
 {
 	bool bResult = Super::CalculateRawConditionValue(OwnerComp, NodeMemory);
 
-	auto CurrentPawn = Cast<AMonster_Goblin>(OwnerComp.GetAIOwner()->GetPawn());
+	APawn* CurrentPawn = OwnerComp.GetAIOwner()->GetPawn();
 	if (CurrentPawn == nullptr)
 		return false;
 	
-	auto Target = Cast<AMyTest_TopDownCharacter>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName(TEXT("Target"))));
+	APawn* Target = Cast<APawn>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(FName(TEXT("Target"))));
 	if (Target == nullptr)
 		return false;
 
-	if((Target->GetDistanceTo(CurrentPawn) <= 180.f) && (CurrentPawn->GetState() != AMonster_Goblin::EState::Hit))
+	// 여기서 상태 구분을 해줄 필요는 없다 여기는 Battle 상태에서만 넘어오는 구간이다.
+	if((Target->GetDistanceTo(CurrentPawn) <= 180.f) )
 	{
 		float fDistance = Target->GetDistanceTo(CurrentPawn);// Debug
 

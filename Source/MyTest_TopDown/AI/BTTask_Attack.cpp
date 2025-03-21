@@ -3,42 +3,29 @@
 
 #include "BTTask_Attack.h"
 #include "MyAIController.h"
-#include "MyTest_TopDownCharacter.h"
-#include "Monster_Goblin.h"
 #include "BehaviorTree/BlackboardComponent.h"
+
+#include "Interface/BehaviorInterface.h"
 
 UBTTask_Attack::UBTTask_Attack()
 {
-	bNotifyTick = true;
+	NodeName = TEXT("Attack");
 }
 
 EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	auto MyPawn = Cast<AMonster_Goblin>(OwnerComp.GetAIOwner()->GetPawn());
-	if (MyPawn == nullptr)
-		return EBTNodeResult::Failed;
+	IBehaviorInterface* BI = CastChecked<IBehaviorInterface>(OwnerComp.GetAIOwner()->GetPawn());
 
-
-	MyPawn->Attack();
-	bIsAttacking = true;
-	
-	MyPawn->OnAttackEnd.AddLambda([this]()
+	BI->Attack();
+	FOnAttackEnd Delegate;
+	Delegate.AddLambda([&]()
 		{
-			bIsAttacking = false;
+			OwnerComp.GetBlackboardComponent()->SetValueAsEnum(TEXT("BattleCommand"), NULL);
+			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		});
+	BI->SetAttackDelegate(Delegate);
 
 	return EBTNodeResult::InProgress;
-}
-
-void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
-
-
-	if (bIsAttacking == false)
-	{
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-	}
 }

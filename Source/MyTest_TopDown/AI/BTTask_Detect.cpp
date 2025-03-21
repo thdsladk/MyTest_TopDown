@@ -4,41 +4,36 @@
 #include "BTTask_Detect.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "MyAIController.h"
-#include "Monster_Goblin.h"
 #include "Kismet/KismetMathLibrary.h"
+
+#include "Interface/BehaviorInterface.h"
 
 UBTTask_Detect::UBTTask_Detect()
 {
 	NodeName = TEXT("Detect");
-	bNotifyTick = true;
 }
 
 EBTNodeResult::Type UBTTask_Detect::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	EBTNodeResult::Type Result = Super::ExecuteTask(OwnerComp, NodeMemory);
 
-	auto Self = Cast<AMonster_Goblin>(OwnerComp.GetAIOwner()->GetPawn());
-	if (nullptr == Self)
+	auto BI = Cast<IBehaviorInterface>(OwnerComp.GetAIOwner()->GetPawn());
+	if (nullptr == BI)
 		return EBTNodeResult::Failed;
 
-	Self->OnDetect();
+	BI->OnDetect();
 
-	m_bIsDetectEnd = false;
-	Self->OnDetectEnd.AddLambda([&]()
+	FOnDetectEnd Delegate;
+	Delegate.AddLambda([&]()
 	{
-			m_bIsDetectEnd = true;
+			auto _BI = Cast<IBehaviorInterface>(OwnerComp.GetAIOwner()->GetPawn());
+			if (nullptr == _BI)
+				return;
+			OwnerComp.GetBlackboardComponent()->SetValueAsEnum(TEXT("State"), _BI->GetState());
+			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	});
+	BI->SetDetectDelegate(Delegate);
 
 	return EBTNodeResult::InProgress;
 }
 
-void UBTTask_Detect::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
-{
-	Super::TickTask(OwnerComp, NodeMemory, DeltaSeconds);
-
-
-	if (m_bIsDetectEnd == true)
-	{
-		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-	}
-}

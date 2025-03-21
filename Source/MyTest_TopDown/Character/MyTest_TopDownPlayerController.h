@@ -19,17 +19,20 @@ class AMyTest_TopDownPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
-
-	enum EKey : int8
+	/// <summary>
+	/// 순서가 중요. ordered
+	/// </summary>
+	enum EKey : uint8
 	{
 		Key_Q,
 		Key_W,
 		Key_E,
 		Key_R,
 		Key_V,
+		Key_P,
 		Key_Space,
 		Key_Shift,
-		Key_Interact,
+		Key_F,
 		Key_Tab,
 		Key_End
 
@@ -63,7 +66,8 @@ public:
 
 	/**  Key Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	TArray<class UInputAction*> SetDestinationKeyAction;
+	TMap<FKey, class UInputAction*> SetDestinationKeyAction;
+	//TArray<class UInputAction*> SetDestinationKeyAction;
 
 public:
 	FOnInvetory Inventory_Notify;
@@ -86,9 +90,10 @@ protected:
 
 	void ClickRMouse();
 
-	void ClickInventory();
+	void Click_Tab();
 
-	void Interact();
+	void Click_F();
+	void Click_P();
 
 	void Click_Q();
 	void Click_W();
@@ -108,7 +113,7 @@ private:
 	bool bIsTouch; // Is it a touch device
 	float FollowTime; // For how long it has been pressed
 
-	int8 m_UsedKeyNum = Key_End;
+	uint8 m_UsedKeyNum = Key_End;
 
 protected:
 

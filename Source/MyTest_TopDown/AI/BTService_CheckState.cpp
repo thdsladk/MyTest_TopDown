@@ -4,10 +4,9 @@
 #include "BTService_CheckState.h"
 #include "MyAIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Monster_Goblin.h"
-#include "MonsterStatComponent.h"
 //#include "DrawDebugHelpers.h"
 
+#include "Interface/BehaviorInterface.h"
 
 
 UBTService_CheckState::UBTService_CheckState()
@@ -22,7 +21,7 @@ void UBTService_CheckState::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	auto Self = Cast<AMonster_Goblin>(OwnerComp.GetAIOwner()->GetPawn());
+	IBehaviorInterface* Self = Cast<IBehaviorInterface>(OwnerComp.GetAIOwner()->GetPawn());
 	if (Self == nullptr)
 		return;
 
@@ -45,77 +44,30 @@ void UBTService_CheckState::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* N
 	};
 
 	
-	int32 State = Self->GetState();
-	int32 PreState = 0;
+	uint8 State = Self->GetState();
+	uint8 PreState = 0;
+	uint8 Mode = Self->GetMode();
 	//Debug
 	if (State != PreState)
 	{
-		UE_LOG(LogTemp, Log, TEXT("MonState : %s"), *Str[State]);
+		//UE_LOG(LogTemp, Log, TEXT("NPCState : %s"), *Str[State]);
 		PreState = State;
+
+		// 여기서 변경될때 행동을 넣어주자 . // 중간에 바뀌면 Cancel을 해줘야한다.
+
+
 	}
 
-	if (PreState == AMonster_Goblin::EState::Die)
+	if (PreState == static_cast<uint8>(ENPCState::Die))
 	{
 		// 죽음 상태에서는 항상 die로만 귀결되도록 
 		State = PreState;
 	}
 
 
-	switch (State)
-	{
-		case AMonster_Goblin::EState::Idle :
-		{
-			Self->SetMoveSpeed(400.f);
-			Self->LookDirection(0.f);
-			break;
-		}
-		case AMonster_Goblin::EState::Die :
-		{
-
-			break;
-		}
-		case AMonster_Goblin::EState::Hit :
-		{
-			break;
-		}
-		case AMonster_Goblin::EState::Walk:
-		{
-			break;
-		}
-		case AMonster_Goblin::EState::Stunned:
-		{
-			break;
-		}
-		case AMonster_Goblin::EState::Detect :
-		{
-			break;
-		}
-		case AMonster_Goblin::EState::Battle :
-		{
-			Self->SetMoveSpeed(300.f);
-			Self->LookDirection(0.f);
-			break;
-		}
-		case AMonster_Goblin::EState::Alert :
-		{
-			Self->SetMoveSpeed(200.f);
-
-			break;
-		}
-		case AMonster_Goblin::EState::End:
-		{
-			break;
-		}
-
-		default :
-		{
-			break;
-		}
-
-
-	}
 	OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("State")), State);
 
+	OwnerComp.GetBlackboardComponent()->SetValueAsEnum(FName(TEXT("NPCMode")), Mode);
 
 
 
