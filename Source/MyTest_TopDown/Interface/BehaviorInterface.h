@@ -6,11 +6,11 @@
 #include "UObject/Interface.h"
 #include "BehaviorInterface.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnAttackEnd);
-DECLARE_MULTICAST_DELEGATE(FOnDefenseEnd);
-DECLARE_MULTICAST_DELEGATE(FOnDetectEnd);
-DECLARE_MULTICAST_DELEGATE(FOnAlertEnd);
-DECLARE_MULTICAST_DELEGATE(FOnDeathEnd);
+DECLARE_MULTICAST_DELEGATE(FOnBehaviorAttackEnd);
+DECLARE_MULTICAST_DELEGATE(FOnBehaviorDefenseEnd);
+DECLARE_MULTICAST_DELEGATE(FOnBehaviorDetectEnd);
+DECLARE_MULTICAST_DELEGATE(FOnBehaviorAlertEnd);
+DECLARE_MULTICAST_DELEGATE(FOnBehaviorDeathEnd);
 
 DECLARE_MULTICAST_DELEGATE(FOnUpdateBehavior);
 
@@ -57,11 +57,11 @@ public:
 
 	virtual void LookDirection(float Value) = 0;
 
-	virtual void SetAttackDelegate(const FOnAttackEnd& Delegate) = 0;
-	virtual void SetDefenseDelegate(const FOnDefenseEnd& Delegate) = 0;
-	virtual void SetDetectDelegate(const FOnDetectEnd& Delegate) = 0;
-	virtual void SetAlertDelegate(const FOnAlertEnd& Delegate) = 0;
-	virtual void SetDeathDelegate(const FOnDeathEnd& Delegate) = 0;
+	virtual void SetAttackDelegate(const FOnBehaviorAttackEnd& Delegate) = 0;
+	virtual void SetDefenseDelegate(const FOnBehaviorDefenseEnd& Delegate) = 0;
+	virtual void SetDetectDelegate(const FOnBehaviorDetectEnd& Delegate) = 0;
+	virtual void SetAlertDelegate(const FOnBehaviorAlertEnd& Delegate) = 0;
+	virtual void SetDeathDelegate(const FOnBehaviorDeathEnd& Delegate) = 0;
 
 	virtual void SetUpdateBehaviorDelegate(const FOnUpdateBehavior& Delegate) = 0;
 

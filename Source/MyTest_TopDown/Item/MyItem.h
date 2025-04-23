@@ -3,21 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
 #include "MyInteractable.h"
-#include "MyGameInstance.h"
+#include "Header/DataStruct.h"
 #include "MyItem.generated.h"
 
-UENUM(BlueprintType)
-enum class EItemType : uint8
-{
-	NoneItem,
-	ConsumableItem,
-	Non_ConsumableItem,
-	EquipmentItem,
-	EtcItem,
-	End
-};
 
 UCLASS()
 class MYTEST_TOPDOWN_API AMyItem : public AMyInteractable
@@ -40,15 +29,25 @@ public:
 	FORCEINLINE int32 GetEffectTime() { return m_ItemInfo.EffectTime; }
 	FORCEINLINE int32 GetEffectIntensity() { return m_ItemInfo.EffectIntensity; }
 	FORCEINLINE UTexture2D* GetThumbnail() { return m_ItemInfo.Thumbnail;}
+	FORCEINLINE UStaticMesh* GetItemMesh() { return m_ItemInfo.ItemMesh; }
+	FORCEINLINE USkeletalMesh* GetEquipmentMesh() { return m_ItemInfo.EquipmentMesh; }
+
+
+
+	FORCEINLINE const int32 GetCount() { return m_Count; }
+	void AddCount(int32 Count);
+
 
 	virtual void Init()override;
-	void Click_F();
-	virtual void Interact_Implementation();
+	void OnInteract();
+	virtual void Interact_Implementation()override;
 	virtual void OnPickedUp();
 	virtual int32 UsingItem()override;
 	virtual void Replace(const FVector Pos)override;
 
 	virtual void SetHidden(bool bHide)override;
+
+	virtual bool RemoveObject();
 
 protected:
 	// Called when the game starts or when spawned
@@ -56,15 +55,15 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 
-	virtual void OnCharacterBeginOverlap(
-			UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-			bool bFromSweep, const FHitResult& SweepResult
-		)override;
-
-	virtual void OnCharacterEndOverlap(
-			UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-			UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)override;
+	//virtual void OnCharacterBeginOverlap(
+	//		UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	//		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+	//		bool bFromSweep, const FHitResult& SweepResult
+	//	)override;
+	//
+	//virtual void OnCharacterEndOverlap(
+	//		UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	//		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)override;
 
 
 protected:
@@ -72,14 +71,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
 	FItemData m_ItemInfo;
 
-
-	// Item 변동 정보 ( 아이템은 인벤토리의 각창에 배열로 쌓여있어서 그게 갯수이다.
-	//UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
-	//int32 m_Count;
-
-	EItemType m_ItemType = EItemType::NoneItem;
-
 	bool m_IsGround;
+	
+	// 유동 값 [ 게이지류 ] 
+	UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
+	int32 m_Count;
+
+
 	
 
 

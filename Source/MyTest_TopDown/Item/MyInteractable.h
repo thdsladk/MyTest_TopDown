@@ -39,12 +39,14 @@ protected:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 public:	
 	virtual void Init();
-	void Click_F();
+	void OnInteract();
 	virtual void Interact_Implementation();
 	virtual int32 UsingItem() { return 0; }
 	virtual void Replace(FVector Pos);
 	virtual void SetHidden(bool bHide);
 
+
+	virtual bool RemoveObject();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = Info, meta = (AllowPrivateAccess = true))
@@ -60,7 +62,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = Effect)
 	TObjectPtr<class UNiagaraComponent> m_Effect;
 
+	UPROPERTY(VisibleAnywhere, Category = Boolean)
 	bool m_bVisiable;
+	UPROPERTY(VisibleAnywhere, Category = Boolean)
 	bool m_bInCharacter;
 
 

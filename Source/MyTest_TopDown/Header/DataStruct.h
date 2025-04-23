@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #pragma once
+#include "Engine/DataTable.h"
 #include "DataStruct.generated.h"
 
 
@@ -8,7 +9,7 @@ struct FBaseStatusData : public  FTableRowBase
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Level;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 HP;
@@ -24,6 +25,12 @@ struct FBaseStatusData : public  FTableRowBase
 		int32 Speed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 WillPower;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 AttackRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 AttackRadius;
+
 
 	//int32 Zeal;	// 열성 수치 : 전투를 하거나 무언가를 할때마다 올라간다.
 
@@ -68,7 +75,7 @@ struct FMonsterData : public  FTableRowBase
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString Name;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		int32 Type;
@@ -94,6 +101,11 @@ struct FMonsterData : public  FTableRowBase
 		int32 WillPower;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 AttackRange;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 AttackRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USkeletalMesh* SkeletalMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UStaticMesh* LEquipMesh;
@@ -116,6 +128,8 @@ struct FItemData : public  FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Type;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EEquipmentPart EquipmentPart;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Name;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Description;
@@ -133,6 +147,9 @@ struct FItemData : public  FTableRowBase
 	UTexture2D* Thumbnail;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMesh* ItemMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMesh* EquipmentMesh;
+
 
 };
 

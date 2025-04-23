@@ -4,60 +4,32 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Interface/GameInterface.h"
 #include "MyTest_TopDownGameMode.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnHUDUpdate, uint8);
+
 
 UCLASS(minimalapi)
-class AMyTest_TopDownGameMode : public AGameModeBase
+class AMyTest_TopDownGameMode : public AGameModeBase , public IGameInterface
 {
 	GENERATED_BODY()
 
 public:
 	AMyTest_TopDownGameMode();
 
-	enum EHUDState : uint8
-	{
-		EIngame,
-		EInventory,
-		EShop,
-		EStatus,
-		ESkill,
-		EEnd
-	};
-
-	UUserWidget* GetCurrentWidget() { return CurrentWidget; }
-	uint8 GetHUDState() { return m_CharacterState; }
-	void ApplyHUDChange();
-
-	UFUNCTION(BlueprintCallable, Category = "HUD_Functions")
-	void ChangeHUDState(uint8 State);
-	
-	bool ApplyHUD(TSubclassOf<UUserWidget> Widget, bool bShowMouse, bool EnableClickEvent);
-
-	FOnHUDUpdate OnHUDUpdate;
+public:
+	virtual void OnPlayerScoreChanged(int32 NewPlayerScore) override;
+	virtual void OnPlayerDead() override;
+	virtual bool IsGameCleared() override { return m_bIsCleared; }
 
 protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Game)
+		int32 m_ClearScore;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Game)
+		int32 m_CurrentScore;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Game)
+		uint8 m_bIsCleared : 1;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HUDWidgets", Meta = (BlueprintProtected ="true"))
-	TSubclassOf<UUserWidget> HUD_Class;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HUDWidgets", Meta = (BlueprintProtected = "true"))
-	TSubclassOf<UUserWidget> m_InventoryWidget;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HUDWidgets", Meta = (BlueprintProtected = "true"))
-	TSubclassOf<UUserWidget> m_ShopWidget;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HUDWidgets", Meta = (BlueprintProtected = "true"))
-	TSubclassOf<UUserWidget> m_StatusWidget;
-
-
-
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HUDWidgets", Meta = (BlueprintProtected = "true"))
-	UUserWidget* CurrentWidget;
-
-	uint8 m_CharacterState = 0;
 };
 
 

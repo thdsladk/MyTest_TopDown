@@ -12,11 +12,9 @@
 #include "NiagaraComponent.h"
 
 
-
-
 // Sets default values
 AMyItem::AMyItem()
-	: m_IsGround(true) 
+	: m_IsGround(true), m_Count(1)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -45,6 +43,7 @@ void AMyItem::SetItem(int32 ID)
 			
 			// 스테틱 메쉬 생성과정 [ 직접 경로 만들어서 붙여 주는중 ] 
 			m_ItemInfo.ItemMesh = LoadObject<UStaticMesh>(NULL, *ItemData->ItemMesh->GetPathName() , NULL, LOAD_None, NULL);
+			
 			// 스테틱 메쉬 생성과정 [ 객체를 직접 복사해서 붙여 주는중 ]
 			//if (nullptr != ItemData->ItemMesh)
 			//{
@@ -67,6 +66,19 @@ void AMyItem::SetItem(int32 ID)
 	}
 }
 
+void AMyItem::AddCount(int32 Count)
+{
+	m_Count = FMath::Clamp((m_Count + Count), 0, m_ItemInfo.MaxCount);
+	
+	if (m_Count == 0)
+	{
+		// 아이템 갯수가 0이 되어서 소멸을 호출 해야한다 .
+		// 1. 소멸 시키기    2. 아이템 매니저를 만들어서 0이된 아이템은 매니저에서 보관 
+		// (임시) 지금은 소멸 시키도록 해둔다.
+		Destroy();
+	}
+}
+
 void AMyItem::Init()
 {
 	// 부모가 가지고 있는 멤버들 세팅
@@ -76,7 +88,7 @@ void AMyItem::Init()
 
 }
 
-void AMyItem::Click_F()
+void AMyItem::OnInteract()
 {
 }
 
@@ -91,7 +103,7 @@ void AMyItem::Interact_Implementation()
 	}
 	else
 	{
-		Click_F();
+		OnInteract();
 
 	}
 
@@ -136,6 +148,19 @@ void AMyItem::SetHidden(bool bHide)
 	m_MeshComp->SetSimulatePhysics(!bHide);
 	m_MeshComp->SetHiddenInGame(bHide);
 }
+/// <summary>
+/// 안전하게 객체를 제거 또는 재활용 하기위한 함수
+/// </summary>
+/// <returns></returns>
+bool AMyItem::RemoveObject()
+{
+	// 아이템 갯수가 0이 되어서 소멸을 호출 해야한다 .
+	// 1. 소멸 시키기    2. 아이템 매니저를 만들어서 0이된 아이템은 매니저에서 보관 
+	// (임시) 지금은 소멸 시키도록 해둔다.
+	// return   IsPendingKillPending 
+
+	return Destroy();
+}
 
 // Called when the game starts or when spawned
 void AMyItem::BeginPlay()
@@ -157,14 +182,14 @@ void AMyItem::PostInitializeComponents()
 
 }
 
-void AMyItem::OnCharacterBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	Super::OnCharacterBeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-}
-
-void AMyItem::OnCharacterEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	Super::OnCharacterEndOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex);
-}
+//void AMyItem::OnCharacterBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+//{
+//	AMyInteractable::OnCharacterBeginOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+//}
+//
+//void AMyItem::OnCharacterEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+//{
+//	AMyInteractable::OnCharacterEndOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex);
+//}
 
 

@@ -5,12 +5,10 @@
 #include "MyTest_TopDownCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "UObject/ConstructorHelpers.h"
-#include "MyHUD.h"
-#include "MyInventoryWidget.h"
-#include "StatWidget.h"
 
 
 AMyTest_TopDownGameMode::AMyTest_TopDownGameMode()
+	:m_ClearScore(3),m_CurrentScore(0),m_bIsCleared(false)
 {
 	// use our custom PlayerController class
 	PlayerControllerClass = AMyTest_TopDownPlayerController::StaticClass();
@@ -29,117 +27,38 @@ AMyTest_TopDownGameMode::AMyTest_TopDownGameMode()
 		PlayerControllerClass = PlayerControllerBPClass.Class;
 	}
 
+}
 
+void AMyTest_TopDownGameMode::OnPlayerScoreChanged(int32 NewPlayerScore)
+{
+	m_CurrentScore = NewPlayerScore;
 
-	static ConstructorHelpers::FClassFinder<UMyHUD> UI_HUD(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/TopDown/UI/BP_MyHUD.BP_MyHUD_C'"));
-	if (UI_HUD.Succeeded())
+	// 싱글이라서 모든 플레이어컨트롤러를 가져오지 않고 첫번째만 가져온다. 
+	AMyTest_TopDownPlayerController* PlayerController = Cast<AMyTest_TopDownPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PlayerController != nullptr)
 	{
-		HUD_Class = UI_HUD.Class;
+		PlayerController->GameScoreChanged(m_CurrentScore);
+	}
 
-		// Create the widget instance.
-		CurrentWidget = CreateWidget(GetWorld(), HUD_Class);
-		if (CurrentWidget)
+	if (m_CurrentScore >= m_ClearScore)
+	{
+		m_bIsCleared = true;
+
+		if (PlayerController)
 		{
-			// Add the widget to the viewport so that it becomes visible on the screen.
-			CurrentWidget->AddToViewport();
+			PlayerController->GameClear();
 		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Fail HUD"));
+
 	}
 
-	static ConstructorHelpers::FClassFinder<UMyInventoryWidget> Inventory_HUD(TEXT("/Script/UMGEditor.WidgetBlueprint'/Game/TopDown/UI/Inventory/WBP_MyInventoryWidget.WBP_MyInventoryWidget_C'"));
-	if (Inventory_HUD.Succeeded())
-	{
-		m_InventoryWidget = Inventory_HUD.Class;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Fail Inventory HUD"));
-	}
-
-	static ConstructorHelpers::FClassFinder<UStatWidget> Status_HUD(TEXT("/Game/TopDown/UI/BP_StatHUD.BP_StatHUD_C"));
-	if (Status_HUD.Succeeded())
-	{
-		m_StatusWidget = Status_HUD.Class;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Fail Status HUD"));
-	}
 
 }
 
-void AMyTest_TopDownGameMode::ApplyHUDChange()
+void AMyTest_TopDownGameMode::OnPlayerDead()
 {
-	if (CurrentWidget != nullptr)
+	AMyTest_TopDownPlayerController* PlayerController = Cast<AMyTest_TopDownPlayerController>(GetWorld()->GetFirstLocalPlayerFromController());
+	if (PlayerController != nullptr)
 	{
-		CurrentWidget->RemoveFromParent();
+		PlayerController->GameOver();
 	}
-
-	switch (m_CharacterState)
-	{
-	case EHUDState::EIngame:
-	{
-		ApplyHUD(HUD_Class, true, true);
-		break;
-	}
-	case EHUDState::EInventory :
-	{
-		ApplyHUD(m_InventoryWidget, true, true);
-		break;
-	}
-	case EHUDState::EShop:
-	{
-		ApplyHUD(m_ShopWidget, true, true);
-		break;
-	}
-	case EHUDState::EStatus:
-	{ 
-		ApplyHUD(m_StatusWidget, true, true);
-		break;
-	}
-	case EHUDState::ESkill:
-	{
-		ApplyHUD(HUD_Class, true, true);
-		break;
-	}
-	default :
-		break;
-	}
-}
-
-void AMyTest_TopDownGameMode::ChangeHUDState(uint8 State)
-{
-	m_CharacterState = State;
-	ApplyHUDChange();
-}
-
-bool AMyTest_TopDownGameMode::ApplyHUD(TSubclassOf<UUserWidget> Widget, bool bShowMouse, bool EnableClickEvent)
-{
-	//AMyTest_TopDownCharacter* Character = Cast<AMyTest_TopDownCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0));
-	AMyTest_TopDownPlayerController* Controller = Cast<AMyTest_TopDownPlayerController>(GetWorld()->GetFirstPlayerController());
-	
-	if (Controller != nullptr)
-	{
-
-		Controller->bShowMouseCursor = bShowMouse;
-		Controller->bEnableClickEvents = EnableClickEvent;
-
-		CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), Widget);
-		
-		if (CurrentWidget != nullptr)
-		{
-			CurrentWidget->AddToViewport();
-			// Widget이 변경 될때마다 알리자 . 
-			OnHUDUpdate.Broadcast(m_CharacterState);
-
-			return true;
-		}
-	}
-	
-	
-	
-	return false;
 }

@@ -146,13 +146,14 @@ void AMyInteractable::Init()
 	m_Trigger->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }
 
-void AMyInteractable::Click_F()
+void AMyInteractable::OnInteract()
 {
 	m_Effect->Activate(true);
 }
 
 void AMyInteractable::Interact_Implementation()
 {
+
 }
 
 void AMyInteractable::Replace(FVector Pos)
@@ -169,5 +170,18 @@ void AMyInteractable::SetHidden(bool bHide)
 	m_MeshComp->SetVisibility(!bHide);
 	m_MeshComp->SetSimulatePhysics(!bHide);
 	m_MeshComp->SetHiddenInGame(bHide);
+}
+/// <summary>
+/// 안전하게 객체를 제거 또는 재활용 하기위한 함수
+/// </summary>
+/// <returns></returns>
+bool AMyInteractable::RemoveObject()
+{
+	// 아이템 갯수가 0이 되어서 소멸을 호출 해야한다 .
+	// 1. 소멸 시키기    2. 아이템 매니저를 만들어서 0이된 아이템은 매니저에서 보관 
+	// (임시) 지금은 소멸 시키도록 해둔다.
+	// return   IsPendingKillPending 
+	
+	return Destroy();
 }
 
