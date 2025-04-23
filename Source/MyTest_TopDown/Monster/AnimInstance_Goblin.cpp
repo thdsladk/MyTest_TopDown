@@ -51,8 +51,3 @@ void UAnimInstance_Goblin::NativeUpdateAnimation(float DeltaSeconds)
 	}
 }
 
-const UAnimMontage* UAnimInstance_Goblin::GetMontageInst(uint8 MontageIndex)
-{
-	// 없으면 nullptr이 반환.
-	return m_MontageList[MontageIndex];
-}

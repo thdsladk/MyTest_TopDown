@@ -262,11 +262,23 @@ bool USlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent
     else if (m_SlotType == ESlotType::EquipmentSlot)
     {
         // 드래그된 아이템이 장비여야한다.  장비로 등록하고 옮겨버리자. 아직 장비인지 구분하는 부분이 없다.
-        //if ()
+        if (m_InventoryComp->Equip(DragSlotIndex, m_SlotIndex) == true)
         {
-            m_InventoryComp->SetEquipmentRef(m_SlotIndex - (m_InventoryComp->GetInventorySize()), DragSlotIndex);
-            m_InventoryComp->SwapInventory(DragSlotIndex, m_SlotIndex);            
+            // 장착 성공
+
+            //Debug
+            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, TEXT("Equip : Success "));
+
         }
+        else
+        {
+            // 장착 실패
+
+            //Debug
+            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, TEXT("Equip : Fail "));
+
+        }
+        
     }
     
     // Debug Message

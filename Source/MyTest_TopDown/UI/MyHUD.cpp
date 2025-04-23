@@ -40,7 +40,7 @@ void UMyHUD::BindHP(UMyStatComponent* StatComp)
 	StatComp->OnMPChanged.AddUObject(this, &UMyHUD::UpdateMP);
 	StatComp->OnSPChanged.AddUObject(this, &UMyHUD::UpdateSP);
 
-	m_PreHpRatio = m_StatComp->GetHPRatio();
+	m_PreHpRatio = StatComp->GetHPRatio();
 
 	// Screen1 Bind 
 	StatComp->OnHPChanged.AddUObject(this, &UMyHUD::UpDateScreen1);

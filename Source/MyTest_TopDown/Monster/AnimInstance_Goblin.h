@@ -6,9 +6,6 @@
 #include "Character/AnimInstanceBase.h"
 #include "AnimInstance_Goblin.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnAttackHit);
-DECLARE_MULTICAST_DELEGATE(FOnAttackEnd);
-DECLARE_MULTICAST_DELEGATE(FOnDeathPoint);
 
 /**
  * 
@@ -23,9 +20,6 @@ public:
 
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
-
-	// 임시 함수 (DEBUG)
-	const UAnimMontage* GetMontageInst(uint8 MontageIndex);
 
 protected:
 
