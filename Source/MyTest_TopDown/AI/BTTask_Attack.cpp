@@ -19,7 +19,7 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	IBehaviorInterface* BI = CastChecked<IBehaviorInterface>(OwnerComp.GetAIOwner()->GetPawn());
 
 	BI->Attack();
-	FOnAttackEnd Delegate;
+	FOnBehaviorAttackEnd Delegate;
 	Delegate.AddLambda([&]()
 		{
 			OwnerComp.GetBlackboardComponent()->SetValueAsEnum(TEXT("BattleCommand"), NULL);

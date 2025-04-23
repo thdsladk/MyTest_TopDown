@@ -44,6 +44,11 @@ ACharacterBase::ACharacterBase()
 	}
 
 
+
+	m_pInventoryComp = CreateDefaultSubobject<UMyInventoryComponent>(TEXT("Inventory"));
+	m_pEquipmentComp = CreateDefaultSubobject<UMyEquipmentComponent>(TEXT("Equip"));
+
+
 }
 
 // Called when the game starts or when spawned
@@ -144,7 +149,7 @@ void ACharacterBase::Sprint()
 	if (m_CharacterState == EBehaviorState::Idle || m_CharacterState == EBehaviorState::Battle)
 	{
 		m_CharacterState = EBehaviorState::Running;
-		GetCharacterMovement()->MaxWalkSpeed = 1000.f;			// 캐릭터 이동속도	(임시) 상수는 바꿔야한다.
+		GetCharacterMovement()->MaxWalkSpeed = (m_OriginMoveSpeed * 2.f);		// 캐릭터 이동속도 
 	}
 }
 
@@ -171,6 +176,71 @@ void ACharacterBase::StopSprint()
 
 	GetCharacterMovement()->MaxWalkSpeed = m_OriginMoveSpeed;		// 캐릭터 이동속도
 }
+/// <summary>
+/// 캐릭터 단에서 UseItem을 한다.
+/// </summary>
+/// <param name="Index">아이템 리스트에서의 번호 </param>
+void ACharacterBase::UseItem(int32 Index)
+{
+	if (m_pInventoryComp == nullptr)
+		return;
+
+	// 일단 값들이 int32라서 배열로 쭉 받긴 하는데 이게 맞는지... 
+	TArray<int32> ItemEffect = m_pInventoryComp->UseItem(Index);
+	if (ItemEffect.IsEmpty() == false)
+	{
+		switch (ItemEffect[0])
+		{
+		case static_cast<int32>(EItemEffectType::PlusHP):
+		{
+			m_pStatComp->AddHP(ItemEffect[2]);
+			break;
+		}
+		case static_cast<int32>(EItemEffectType::PlusMP):
+		{
+			m_pStatComp->AddMP(ItemEffect[2]);
+			break;
+		}
+		case static_cast<int32>(EItemEffectType::PlusSP):
+		{
+			m_pStatComp->AddSP(ItemEffect[2]);
+			break;
+		}
+		case static_cast<int32>(EItemEffectType::PlusAttack):
+		{
+			FBaseStatusData Stat{};
+			Stat.Attack = ItemEffect[2];
+			m_pStatComp->AddBaseStat(Stat);
+
+			break;
+		}
+		case static_cast<int32>(EItemEffectType::PlusDefence):
+		{
+			FBaseStatusData Stat{};
+			Stat.Defence = ItemEffect[2];
+			m_pStatComp->AddBaseStat(Stat);
+
+			break;
+		}
+
+		default:
+			break;
+		}
+
+	}
+
+}
+/// <summary>
+/// 캐릭터 단에서 DropItem을 한다.
+/// </summary>
+/// <param name="Index"></param>
+/// <param name="Pos"></param>
+void ACharacterBase::DropItem(int32 Index, FVector Pos)
+{
+	if (m_pInventoryComp == nullptr)
+		return;
+	m_pInventoryComp->DropItem(Index, Pos);
+}
 
 void ACharacterBase::OnIdle()
 {
@@ -192,7 +262,7 @@ void ACharacterBase::Death()
 {
 }
 
-void ACharacterBase::Death_End()
+void ACharacterBase::DeathEnd()
 {
 }
 

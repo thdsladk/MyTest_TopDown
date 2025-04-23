@@ -15,12 +15,8 @@ UMyStatComponent::UMyStatComponent()
 	bWantsInitializeComponent = true;
 
 	m_BaseStat.Level = 1;
-}
-
-// Called when the game starts
-void UMyStatComponent::BeginPlay()
-{
-	Super::BeginPlay();
+	m_BaseStat.AttackRange = 100;
+	m_BaseStat.AttackRadius = 150;
 
 }
 
@@ -55,6 +51,10 @@ void UMyStatComponent::SetLevel(int32 Level)
 			m_BaseStat.Defence	 = 	StatData->Defence;
 			m_BaseStat.Speed	 = 	StatData->Speed;
 			m_BaseStat.WillPower = 	StatData->WillPower;
+
+			m_BaseStat.AttackRange = StatData->AttackRange;
+			m_BaseStat.AttackRadius = StatData->AttackRadius;
+			
 
 		}
 		// Gauge Setting

@@ -22,7 +22,7 @@ EBTNodeResult::Type UBTTask_Dead::ExecuteTask(UBehaviorTreeComponent& OwnerComp,
 
 
 	// 죽음 상태는 단 한번만 이루어지니까. 
-	FOnDeathEnd Delegate;
+	FOnBehaviorDeathEnd Delegate;
 	Delegate.AddLambda([&]()
 		{
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);

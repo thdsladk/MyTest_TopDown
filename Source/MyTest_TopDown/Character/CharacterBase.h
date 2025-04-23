@@ -5,19 +5,27 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Interface/BehaviorInterface.h"
+#include "Interface/InventoryInterface.h"
 #include "Header/BehaviorEnum.h"
 #include "CharacterBase.generated.h"
 
 class UMyStatComponent;
 
 UENUM(BlueprintType)
-enum class ECharacterMode : uint8 { Idle, Battle, StopAI, End };
+enum class ECharacterMode : uint8 
+{ 
+	Idle	UMETA(DisplayName = "Idle"),
+	Detect	UMETA(DisplayName = "Detect"), 
+	Battle	UMETA(DisplayName = "Battle"),
+	StopAI	UMETA(DisplayName = "StopAI"), 
+	End		UMETA(DisplayName = "End")
+};
 
 // EBehaviorState 는  "Header/BehaviorEnum.h"로 옮겨 뒀다.
 // 고민을 해봐야한다 저위치가 맞는지...
 
 UCLASS()
-class MYTEST_TOPDOWN_API ACharacterBase : public ACharacter, public IBehaviorInterface
+class MYTEST_TOPDOWN_API ACharacterBase : public ACharacter, public IBehaviorInterface, public IInventoryInterface
 {
 	GENERATED_BODY()
 public:
@@ -79,11 +87,11 @@ public:
 	virtual void OnIdle()override;
 	virtual void OnBattle()override;
 	virtual void Attack()override;
-	void AttackCheck();
+	virtual void AttackCheck();
+	virtual void AttackEnd();
 	virtual void Death()override;
-	void Death_End();
+	virtual void DeathEnd();
 	virtual void OnHit()override;
-	void AttackEnd();
 	virtual void OnDefense()override;
 	virtual void StopDefense()override;
 	virtual void Defense_Hit()override;
@@ -94,11 +102,11 @@ public:
 
 	virtual void LookDirection(float Value);
 
-	virtual void SetAttackDelegate(const FOnAttackEnd& Delegate)override { OnAttackEnd = Delegate; }
-	virtual void SetDefenseDelegate(const FOnDefenseEnd& Delegate)override { OnDefenseEnd = Delegate; }
-	virtual void SetDetectDelegate(const FOnDetectEnd& Delegate)override { OnDetectEnd = Delegate; }
-	virtual void SetAlertDelegate(const FOnAlertEnd& Delegate)override { OnAlertEnd = Delegate; }
-	virtual void SetDeathDelegate(const FOnDeathEnd& Delegate)override { OnDeathEnd = Delegate; }
+	virtual void SetAttackDelegate(const FOnBehaviorAttackEnd& Delegate)override { OnAttackEnd = Delegate; }
+	virtual void SetDefenseDelegate(const FOnBehaviorDefenseEnd& Delegate)override { OnDefenseEnd = Delegate; }
+	virtual void SetDetectDelegate(const FOnBehaviorDetectEnd& Delegate)override { OnDetectEnd = Delegate; }
+	virtual void SetAlertDelegate(const FOnBehaviorAlertEnd& Delegate)override { OnAlertEnd = Delegate; }
+	virtual void SetDeathDelegate(const FOnBehaviorDeathEnd& Delegate)override { OnDeathEnd = Delegate; }
 
 	virtual void SetUpdateBehaviorDelegate(const FOnUpdateBehavior& Delegate)override;
 
@@ -106,11 +114,11 @@ public:
 
 #pragma region Delegate Member
 	// 행동_끝 시점 관련 델리게이트
-	FOnAttackEnd OnAttackEnd;
-	FOnDefenseEnd OnDefenseEnd;
-	FOnDetectEnd OnDetectEnd;
-	FOnAlertEnd OnAlertEnd;
-	FOnDeathEnd OnDeathEnd;
+	FOnBehaviorAttackEnd OnAttackEnd;
+	FOnBehaviorDefenseEnd OnDefenseEnd;
+	FOnBehaviorDetectEnd OnDetectEnd;
+	FOnBehaviorAlertEnd OnAlertEnd;
+	FOnBehaviorDeathEnd OnDeathEnd;
 
 	FOnUpdateBehavior OnUpdateBehavior;
 #pragma endregion
@@ -141,11 +149,23 @@ public:
 	UFUNCTION()
 	void SetVertical(float Vertical) { m_Vertical = Vertical; }
 
+	// CharacterBase 단에서 구분 할 수 있도록 제공해보자. 
+	virtual bool IsPlayerCharacter() { return true; }
+
+	// Inventory Section
+	virtual void UseItem(int32 Index)override;
+	virtual void DropItem(int32 Index, FVector Pos = FVector(0.0, 0.0, 0.0))override;
+
+
 protected:
 
 	//	Components
-	UPROPERTY(VisibleAnywhere, Category = Component)
+	UPROPERTY(VisibleAnywhere, Category = Components)
 	TObjectPtr<UMyStatComponent> m_pStatComp;
+	UPROPERTY(VisibleAnywhere, Category = Component)
+		class UMyInventoryComponent* m_pInventoryComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Component, meta = (AllowPrivateAccess = "true"))
+		class UMyEquipmentComponent* m_pEquipmentComp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MaterialList", Meta = (AllowPrivateAccess = true))
 		UMaterialInterface* m_TestMaterial;

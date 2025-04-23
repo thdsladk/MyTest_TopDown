@@ -55,7 +55,7 @@ void UBTTask_ExecuteCommand::OnAttack(UBehaviorTreeComponent& OwnerComp)
 		return;
 
 	BI->Attack();
-	FOnAttackEnd Delegate;
+	FOnBehaviorAttackEnd Delegate;
 	Delegate.AddLambda([&]()
 		{
 			OwnerComp.GetBlackboardComponent()->SetValueAsEnum(TEXT("BattleCommand"), NULL);
@@ -71,7 +71,7 @@ void UBTTask_ExecuteCommand::OnSmashAttack(UBehaviorTreeComponent& OwnerComp)
 		return;
 
 	//BI->SmashAttack();
-	FOnAttackEnd Delegate;
+	FOnBehaviorAttackEnd Delegate;
 	Delegate.AddLambda([&]()
 		{
 			OwnerComp.GetBlackboardComponent()->SetValueAsEnum(TEXT("BattleCommand"), NULL);
@@ -88,7 +88,7 @@ void UBTTask_ExecuteCommand::OnDefense(UBehaviorTreeComponent& OwnerComp)
 
 	// Set Defense State
 	BI->OnDefense();
-	FOnDefenseEnd Delegate;
+	FOnBehaviorDefenseEnd Delegate;
 	Delegate.AddLambda([&]()
 		{
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);

@@ -30,7 +30,7 @@ EBTNodeResult::Type UBTTask_Alert::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 
 
 	BI->OnAlert();
-	FOnAlertEnd Delegate;
+	FOnBehaviorAlertEnd Delegate;
 
 	Delegate.AddLambda([&]()
 		{

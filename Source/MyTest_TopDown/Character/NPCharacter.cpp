@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "NPCharacter.h"
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -19,7 +18,10 @@
 #include "DamageFontWidget.h"
 #include "EmotionWidget.h"
 
+#include "Engine/AssetManager.h"
 #include "NavigationSystem.h"
+
+#include "Utill/RandomSystem.h"
 
 // Sets default values
 ANPCharacter::ANPCharacter()
@@ -27,17 +29,13 @@ ANPCharacter::ANPCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// 태그를 추가하기.
+	Tags.Add(FName("NPC"));
+
 	//// 캡슐 사이즈는 필요하면 다시 설정해주자.
 	//// Set size for player capsule
 	//GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-
-	// Combat Stat				// 테스팅용 값이다. 값을 받아서 객체마다 다르게 세팅해야한다.
-	m_AttackRange = 50.f;
-	m_AttackRadius = 50.f;
-	m_DefenseRadius = 150.f;
-	m_DetectionRadius = 800.f;
-	m_VisibleRadius = 1200.f;
 
 	// Skeletal Mesh
 	//static ConstructorHelpers::FObjectFinder<USkeletalMesh> SM(TEXT("/Script/Engine.SkeletalMesh'/Game/Goblin/Mesh/Goblin_Base/SK_Goblin.SK_Goblin'"));
@@ -47,8 +45,7 @@ ANPCharacter::ANPCharacter()
 	//	GetMesh()->SetSkeletalMesh(SM.Object);
 	//}
 
-	// Stat
-	m_pStatComp = CreateDefaultSubobject<UMonsterStatComponent>(TEXT("Stat"));
+
 
 	// HP bar
 	m_HpBar = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPBAR"));
@@ -81,6 +78,10 @@ ANPCharacter::ANPCharacter()
 	}
 
 
+	// Stat
+	m_pStatComp = CreateDefaultSubobject<UMonsterStatComponent>(TEXT("Stat"));
+
+
 
 	// AI Set
 	AIControllerClass = AMyAIController::StaticClass();
@@ -91,43 +92,52 @@ void ANPCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
-
-	m_NPCType = FName("Goblin_Red-1");
-	FMonsterData* MonsterData = Cast<UMyGameInstance>(GetGameInstance())->GetMonsterStatData(m_NPCType.ToString());
-	//// DuplicateObject를 통해서 생성한 메시객체는 어디서 메모리 관리를 할까 직접 멤버관리를 하는것일까? 
+	//TArray<FString> NameList{ TEXT("Goblin-1"),TEXT("Goblin-2") ,TEXT("Goblin-3"),TEXT("Goblin_Ice-1") ,TEXT("Goblin_Red-1") ,TEXT("Goblin_Red-2") };
+	//int32 NumRandom = FMath::RandRange(0, NameList.Num()-1);
+	//
+	//m_NPCType = NameList[NumRandom];
+	//FMonsterData* MonsterData = Cast<UMyGameInstance>(GetGameInstance())->GetMonsterStatData(m_NPCType);
+	////// DuplicateObject를 통해서 생성한 메시객체는 어디서 메모리 관리를 할까 직접 멤버관리를 하는것일까? 
 	//// UObject의 자식이라서 일단 가비지 컬렉터가 관리할것으로 보인다. 
 	//GetMesh()->SetSkeletalMesh(DuplicateObject<USkeletalMesh>(MonsterData->SkeletalMesh, this));
-
-	//AttachmentEquipment Weapon1
-	FName WeaponSocket(TEXT("Weapon_Socket"));
-	m_EquipmentLeft = GetWorld()->SpawnActorDeferred<AMyEquipment>(AMyEquipment::StaticClass(), FTransform());
-
-	if (nullptr != m_EquipmentLeft)
-	{
-		m_EquipmentLeft->SetItem(MonsterData->LItemID);
-		m_EquipmentLeft->AttachToComponent(GetMesh(),
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			WeaponSocket);
-		m_EquipmentLeft->OnEquip();
-
-		m_EquipmentLeft->FinishSpawning(FTransform());
-	}
-
-	//AttachmentEquipment Weapon2
-	FName ShieldSocket(TEXT("Shield_Socket"));
-	m_EquipmentRight = GetWorld()->SpawnActorDeferred<AMyEquipment>(AMyEquipment::StaticClass(), FTransform());
-
-	if (nullptr != m_EquipmentRight)
-	{
-		m_EquipmentRight->SetItem(MonsterData->RItemID);
-		m_EquipmentRight->AttachToComponent(GetMesh(),
-			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			ShieldSocket);
-		m_EquipmentRight->OnEquip();
-
-		m_EquipmentRight->FinishSpawning(FTransform());
-	}
-
+	//
+	////AttachmentEquipment Weapon1
+	//FName WeaponSocket(TEXT("Weapon_Socket"));
+	//FName RightHandSocket(TEXT("RightHand_Socket"));
+	//m_EquipmentLeft = GetWorld()->SpawnActorDeferred<AMyEquipment>(AMyEquipment::StaticClass(), FTransform());
+	//
+	//if (nullptr != m_EquipmentLeft)
+	//{
+	//	m_EquipmentLeft->SetItem(MonsterData->LItemID);
+	//	m_EquipmentLeft->Equip();
+	//	if (m_EquipmentLeft->AttachToComponent(GetMesh(),
+	//		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+	//		RightHandSocket) == false)
+	//	{
+	//		UE_LOG(LogTemp, Log, TEXT(" Not Attached "));
+	//	}
+	//
+	//	m_EquipmentLeft->FinishSpawning(FTransform());
+	//}
+	//
+	////AttachmentEquipment Weapon2
+	//FName ShieldSocket(TEXT("Shield_Socket"));
+	//FName LeftHandSocket(TEXT("LeftHand_Socket"));
+	//m_EquipmentRight = GetWorld()->SpawnActorDeferred<AMyEquipment>(AMyEquipment::StaticClass(), FTransform());
+	//
+	//if (nullptr != m_EquipmentRight)
+	//{
+	//	m_EquipmentRight->SetItem(MonsterData->RItemID);
+	//	m_EquipmentRight->Equip();
+	//	if (m_EquipmentRight->AttachToComponent(GetMesh(),
+	//		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+	//		LeftHandSocket) == false)
+	//	{
+	//		UE_LOG(LogTemp, Log, TEXT(" Not Attached "));	
+	//	}
+	//
+	//	m_EquipmentRight->FinishSpawning(FTransform());
+	//}
 
 
 	//DEBUG 
@@ -170,7 +180,14 @@ void ANPCharacter::PostInitializeComponents()
 	// 스텟에서 OnDeathCheck가 Broadcast 된다면 Death함수 호출 
 	m_pStatComp->OnDeathCheck.AddUObject(this, &ANPCharacter::Death);
 
-	//m_pStatComp->SetLevel(m_pStatComp->GetLevel()); // 스텟 초기화 
+
+
+	// Combat Stat				// 테스팅용 값이다. 값을 받아서 객체마다 다르게 세팅해야한다.
+	m_AttackRange = 50.f;
+	m_AttackRadius = 50.f;
+	m_DefenseRadius = 150.f;
+	m_DetectionRadius = 800.f;
+	m_VisibleRadius = 1200.f;
 
 
 	m_HpBar->InitWidget();
@@ -180,6 +197,11 @@ void ANPCharacter::PostInitializeComponents()
 	auto HpWidget = Cast<UPawnWidget>(m_HpBar->GetUserWidgetObject());
 	if (HpWidget)
 		HpWidget->BindHp(m_pStatComp);
+
+
+	ensure(NPCMeshes.Num() > 0);
+	int32 RandIndex = FMath::RandRange(0, NPCMeshes.Num() - 1);
+	NPCMeshHandle = UAssetManager::Get().GetStreamableManager().RequestAsyncLoad(NPCMeshes[RandIndex], FStreamableDelegate::CreateUObject(this, &ANPCharacter::NPCMeshLoadCompleted));
 
 
 }
@@ -283,7 +305,7 @@ void ANPCharacter::Death()
 	}
 }
 
-void ANPCharacter::Death_End()
+void ANPCharacter::DeathEnd()
 {
 	if(m_CharacterState == EBehaviorState::Die)
 	{
@@ -457,6 +479,25 @@ bool ANPCharacter::IsOnTriggerEscape()
 	return (m_pStatComp->GetHPRatio() <= 0.2f);
 }
 
+void ANPCharacter::HighlightActor()
+{
+	//DEBUG
+	UE_LOG(LogTemp, Log, TEXT(" MouseOverlap : Enter "));
+	
+	GetMesh()->SetRenderCustomDepth(true);
+	GetMesh()->SetCustomDepthStencilValue(250);
+	
+}
+
+void ANPCharacter::UnHighlightActor()
+{
+	//DEBUG
+	UE_LOG(LogTemp, Log, TEXT(" MouseOverlap : Leave "));
+
+	GetMesh()->SetRenderCustomDepth(false);
+	
+}
+
 void ANPCharacter::OnStopAttackMontage(float InBlendOutTime)
 {
 	m_AnimInstance->StopAttackMontage(InBlendOutTime);
@@ -529,7 +570,7 @@ void ANPCharacter::OnDeathMontageEnded()
 			this->SetActorEnableCollision(false);
 			
 			
-			GetWorld()->GetTimerManager().SetTimer(m_hDeathTimer, this, &ANPCharacter::Death_End, 1.f, true);
+			GetWorld()->GetTimerManager().SetTimer(m_hDeathTimer, this, &ANPCharacter::DeathEnd, 1.f, true);
 			break;
 		}
 		case EBehaviorState::End:
@@ -627,6 +668,21 @@ void ANPCharacter::SetupMonsterWidget(UMyUserWidget* InUserWidget)
 
 
 
+}
+
+void ANPCharacter::NPCMeshLoadCompleted()
+{
+	if (NPCMeshHandle.IsValid())
+	{
+		USkeletalMesh* NPCMesh = Cast<USkeletalMesh>(NPCMeshHandle->GetLoadedAsset());
+		if (NPCMesh)
+		{
+			GetMesh()->SetSkeletalMesh(NPCMesh);
+			GetMesh()->SetHiddenInGame(false);
+		}
+	}
+
+	NPCMeshHandle->ReleaseHandle();
 }
 
 void ANPCharacter::Debug()

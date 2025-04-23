@@ -14,6 +14,7 @@ DECLARE_MULTICAST_DELEGATE(FOnSkillPoint);
 DECLARE_MULTICAST_DELEGATE(FOnSkillEnd);
 DECLARE_MULTICAST_DELEGATE(FOnHitEnd);
 
+
 // EBehaviorState 는  "Header/BehaviorEnum.h"로 옮겨 뒀다.
 // 고민을 해봐야한다 저위치가 맞는지...
 
@@ -68,6 +69,8 @@ public:
 
 	FORCEINLINE void SetIsLive(bool IsLive) { m_IsLive = IsLive; }
 
+	// 임시 함수 (DEBUG)
+	const UAnimMontage* GetMontageInst(uint8 MontageIndex);
 
 #pragma region Delegate Member
 	FOnAttackHit	m_OnAttackHit;

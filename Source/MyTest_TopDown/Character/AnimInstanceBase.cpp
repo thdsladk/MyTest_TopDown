@@ -281,3 +281,9 @@ void UAnimInstanceBase::SetAutoBlendoutMontage(uint8 MontageIndex, bool bOnOff)
 		break;
 	}
 }
+
+const UAnimMontage* UAnimInstanceBase::GetMontageInst(uint8 MontageIndex)
+{
+	// 없으면 nullptr이 반환.
+	return m_MontageList[MontageIndex];
+}

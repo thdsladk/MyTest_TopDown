@@ -4,14 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Character/CharacterBase.h"
+#include "Engine/StreamableManager.h"
 #include "Interface/MyMonsterWidgetInterface.h"
+#include "Interface/HighlightInterface.h"
 #include "NPCharacter.generated.h"
 
 
 class AMyEquipment;
 
-UCLASS()
-class MYTEST_TOPDOWN_API ANPCharacter : public ACharacterBase, public IMyMonsterWidgetInterface
+UCLASS(config=NPCList)
+class MYTEST_TOPDOWN_API ANPCharacter : public ACharacterBase, public IMyMonsterWidgetInterface, public IHighlightInterface
 {
 	GENERATED_BODY()
 
@@ -33,10 +35,10 @@ public:
 	virtual void OnIdle()override;
 	virtual void OnBattle()override;
 	virtual void Attack()override;
-	void AttackCheck();
-	void AttackEnd();
+	virtual void AttackCheck()override;
+	virtual void AttackEnd()override;
 	virtual void Death()override;
-	void Death_End();
+	virtual void DeathEnd()override;
 	virtual void OnHit()override;
 	virtual void OnDefense()override;
 	virtual void StopDefense()override;
@@ -47,6 +49,12 @@ public:
 	virtual void OnCommand(uint8 Command)override;
 
 	virtual bool IsOnTriggerEscape()override;
+
+
+	// Highlight Section
+public:
+	virtual void HighlightActor()override;
+	virtual void UnHighlightActor()override;
 
 
 	// Animation Function			// 몽타주의 형태를 정형화 해버리면 종속될 위험도 생각하자.
@@ -62,6 +70,8 @@ public:
 	// Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	
+	virtual bool IsPlayerCharacter() override{ return false; }
+
 protected:
 	// Widget Section
 	virtual void SetupMonsterWidget(class UMyUserWidget* InUserWidget) override;
@@ -70,11 +80,11 @@ protected:
 protected:
 	//S/ 부속 파트 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "NPCType")
-	FName m_NPCType;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-	TWeakObjectPtr<AMyEquipment> m_EquipmentLeft {nullptr};
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
-	TWeakObjectPtr<AMyEquipment> m_EquipmentRight {nullptr};
+	FString m_NPCType;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	//TWeakObjectPtr<AMyEquipment> m_EquipmentLeft {nullptr};
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Equipment")
+	//TWeakObjectPtr<AMyEquipment> m_EquipmentRight {nullptr};
 	
 
 	// Components
@@ -87,6 +97,8 @@ protected:
 	class UWidgetComponent* m_HpBar;
 	UPROPERTY(VisibleAnywhere, Category = "WidgetComp")
 	class UWidgetComponent* m_Emotion;
+
+
 
 	// 클래스만 먼저 정의하고 생성해서 쓰는 방식 
 	// WidgetComponent로 붙이는 방식과 다르게 사용  
@@ -103,6 +115,15 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Color" )
 	float m_fCurrentOpacity = 1.0f;
+
+
+protected:
+	void NPCMeshLoadCompleted();
+
+	UPROPERTY(config)
+	TArray<FSoftObjectPath> NPCMeshes;
+
+	TSharedPtr<FStreamableHandle> NPCMeshHandle;
 
 
 private:

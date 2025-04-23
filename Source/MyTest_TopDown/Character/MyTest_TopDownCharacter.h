@@ -4,15 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Character/CharacterBase.h"
-#include "Interface/InventoryInterface.h"
-
 #include "MyTest_TopDownCharacter.generated.h"
 
 
 
 
 UCLASS(Blueprintable)
-class AMyTest_TopDownCharacter : public ACharacterBase, public IInventoryInterface
+class AMyTest_TopDownCharacter : public ACharacterBase
 {
 	GENERATED_BODY()
 
@@ -44,8 +42,8 @@ public:
 public:
 	// Behavior Section
 	virtual void Attack()override;
-	void AttackCheck();
-	void Attack_End();
+	virtual void AttackCheck()override;
+	virtual void AttackEnd()override;
 	virtual void OnHit()override;
 	virtual void Death()override;
 
@@ -81,8 +79,7 @@ public:
 	void Click_F();
 	void CheckForInteractable();
 
-	virtual void UseItem(int32 Index)override;
-	virtual void DropItem(int32 Index,FVector Pos = FVector(0.0,0.0,0.0))override;
+
 	UFUNCTION()
 		bool HasCurrentInteractable();
 	UFUNCTION()
@@ -92,23 +89,21 @@ public:
 	// Damage Section
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
+	virtual bool IsPlayerCharacter() override { return true; }
+
 #pragma region Components Member
 
 protected:
 	/** Top down camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UCameraComponent* TopDownCameraComponent;
+	class UCameraComponent* TopDownCameraComponent;
 	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class USpringArmComponent* m_CameraBoom;
-	UPROPERTY(VisibleAnywhere, Category = Component)
-		class UMyInventoryComponent* m_pInventoryComp;
-	UPROPERTY(VisibleAnywhere, Category = Component)
-		class USkillComponent* m_pSkillComp;
-	UPROPERTY(VisibleAnywhere, Category = Component)
-		class UMyAnimInstance* m_pAnimInstance;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category = Component, meta = (AllowPrivateAccess = "true"))
-		class UMyEquipmentComponent* m_pEquipmentComp;
+	class USpringArmComponent* m_CameraBoom;
+	UPROPERTY(VisibleAnywhere, Category = Components)
+	class UMyAnimInstance* m_pAnimInstance;
+	UPROPERTY(VisibleAnywhere, Category = Components)
+	class USkillComponent* m_pSkillComp;
 
 
 #pragma endregion
@@ -130,6 +125,13 @@ protected:
 	// Timer 
 	FTimerHandle m_Timer_ItemCollision;
 
+#pragma region DEBUG
+
+private:
+	FTimerHandle m_hDebug;
+	void Debug();
+
+#pragma endregion
 
 };
 

@@ -23,7 +23,7 @@ EBTNodeResult::Type UBTTask_Detect::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 	BI->OnDetect();
 
-	FOnDetectEnd Delegate;
+	FOnBehaviorDetectEnd Delegate;
 	Delegate.AddLambda([&]()
 	{
 			auto _BI = Cast<IBehaviorInterface>(OwnerComp.GetAIOwner()->GetPawn());

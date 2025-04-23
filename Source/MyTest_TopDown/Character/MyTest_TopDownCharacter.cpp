@@ -35,6 +35,7 @@
 // etc Section
 #include "MyItem.h"
 #include "MyInteractable.h"
+#include "Utill/RandomSystem.h"
 
 
 AMyTest_TopDownCharacter::AMyTest_TopDownCharacter()
@@ -42,6 +43,9 @@ AMyTest_TopDownCharacter::AMyTest_TopDownCharacter()
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	// 태그를 추가하기.
+	Tags.Add(FName("PlayerCharacter"));
 
 	// 캡슐 사이즈는 필요하면 다시 설정해주자.
 	//// Set size for player capsule
@@ -51,13 +55,6 @@ AMyTest_TopDownCharacter::AMyTest_TopDownCharacter()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-
-	// Combat Stat			
-	m_AttackRange = 100.f;
-	m_AttackRadius = 150.f;
-	m_DefenseRadius = 250.f;
-	m_DetectionRadius = 800.f;
-	m_VisibleRadius = 1200.f;
 
 
 	// Create a camera boom...
@@ -89,9 +86,9 @@ AMyTest_TopDownCharacter::AMyTest_TopDownCharacter()
 	}
 
 	m_pStatComp = CreateDefaultSubobject<UMyStatComponent>(TEXT("Stat"));
-	m_pInventoryComp = CreateDefaultSubobject<UMyInventoryComponent>(TEXT("Inventory"));
 	m_pSkillComp = CreateDefaultSubobject<USkillComponent>(TEXT("Skill"));
-	m_pEquipmentComp = CreateDefaultSubobject<UMyEquipmentComponent>(TEXT("Equip"));
+
+
 
 }
 
@@ -102,9 +99,21 @@ void AMyTest_TopDownCharacter::BeginPlay()
 	// 충돌체크 함수를 일정하게 호출할 타이머 
 	//GetWorldTimerManager().SetTimer(m_Timer_ItemCollision,this, &AMyTest_TopDownCharacter::CheckForInteractable, 1.f, true, 1.f);
 
-	AMyTest_TopDownPlayerController* PC = Cast<AMyTest_TopDownPlayerController>(GetController());
+	AMyTest_TopDownPlayerController* PC = CastChecked<AMyTest_TopDownPlayerController>(GetController());
 	if (nullptr != PC)
 	{
+		// HUDUpdate	바인딩
+		PC->OnHUDUpdate.AddUObject(this, &AMyTest_TopDownCharacter::HUDUpdate);
+		// HUD Init		초기화
+		auto Widget = Cast<UMyHUD>(PC->GetCurrentWidget());	// 포인터를 스마트 포인터로 관리할 필요가 있다.
+		if (Widget != nullptr)
+		{
+			Widget->Initialize();
+			Widget->BindScreen1();
+			Widget->BindHP(m_pStatComp);
+			Widget->BindSkill(m_pSkillComp);
+		}
+
 		EnableInput(PC);
 	}
 }
@@ -119,29 +128,26 @@ void AMyTest_TopDownCharacter::PostInitializeComponents()
 
 	m_pAnimInstance->OnMontageEnded.AddDynamic(this, &AMyTest_TopDownCharacter::OnAttackMontageEnded);
 	m_pAnimInstance->m_OnAttackHit.AddUObject(this, &AMyTest_TopDownCharacter::AttackCheck);
-	m_pAnimInstance->m_OnAttackEnd.AddUObject(this, &AMyTest_TopDownCharacter::Attack_End);
+	m_pAnimInstance->m_OnAttackEnd.AddUObject(this, &AMyTest_TopDownCharacter::AttackEnd);
 	m_pAnimInstance->m_OnDeathPoint.AddUObject(this, &AMyTest_TopDownCharacter::OnDeathMontageEnded);
 	m_pAnimInstance->m_OnHitEnd.AddUObject(this, &AMyTest_TopDownCharacter::OnHitMontageEnded);
 
 	// 스텟에서 OnDeathCheck가 Broadcast 된다면 Death함수 호출 
 	m_pStatComp->OnDeathCheck.AddUObject(this, &AMyTest_TopDownCharacter::Death);
 
-	AMyTest_TopDownGameMode* GameMode = Cast<AMyTest_TopDownGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (nullptr != GameMode)
-	{
-		// HUDUpdate	바인딩
-		GameMode->OnHUDUpdate.AddUObject(this, &AMyTest_TopDownCharacter::HUDUpdate);
-		// HUD Init		초기화
-		auto Widget = Cast<UMyHUD>(GameMode->GetCurrentWidget());	// 포인터를 스마트 포인터로 관리할 필요가 있다.
-		if (Widget)
-		{
-			Widget->Initialize();
-			Widget->BindScreen1();
-			Widget->BindHP(m_pStatComp);
-			Widget->BindSkill(m_pSkillComp);
-		}
-	}
+	// Combat Stat			// StatComp의 Init 호출 시점이 플레이어캐릭터의 생성자랑 PostInitalizeComponents 사이라서 
+	//						// 현재 위치에 두어야한다. 
+	m_AttackRange = m_pStatComp->GetTotalStat().AttackRange;
+	m_AttackRadius = m_pStatComp->GetTotalStat().AttackRadius;
+	m_DefenseRadius = 250.f;
+	m_DetectionRadius = 800.f;
+	m_VisibleRadius = 1200.f;
+
 	
+
+	//DEBUG 
+	//GetWorld()->GetTimerManager().SetTimer(m_hDebug, this, &AMyTest_TopDownCharacter::Debug, 0.1f, true);
+
 
 }
 
@@ -166,8 +172,6 @@ void AMyTest_TopDownCharacter::SetupPlayerInputComponent(UInputComponent* Player
 	PlayerInputComponent->BindAxis(TEXT("Wheel"), this, &AMyTest_TopDownCharacter::Wheel_UpDown);
 	PlayerInputComponent->BindAxis(TEXT("Vertical_Keyboard"), this, &AMyTest_TopDownCharacter::MoveToFoward);
 	PlayerInputComponent->BindAxis(TEXT("Horizontal_Keyboard"), this, &AMyTest_TopDownCharacter::MoveToRight);
-
-
 
 
 }
@@ -260,7 +264,7 @@ void AMyTest_TopDownCharacter::AttackCheck()
 	}
 }
 
-void AMyTest_TopDownCharacter::Attack_End()
+void AMyTest_TopDownCharacter::AttackEnd()
 {
 	// 매번 Attack Montage의 Section이 끝나면 Notify에 의해서 호출 
 	if (m_CharacterState == EBehaviorState::Attacking)
@@ -376,22 +380,25 @@ void AMyTest_TopDownCharacter::Click_F()
 
 	if (m_CurrentInteractable != nullptr)
 	{
-	// 아이템 채우기.
+		// 아이템 채우기.
 		AMyItem* Item = Cast<AMyItem>(m_CurrentInteractable);
 		if (Item != nullptr)
 		{
-			int32 Index = m_pInventoryComp->FindAddIndex(Item->GetID());
-			
-			if (Index == -1)// 실패  
-				return;
+			if (m_pInventoryComp->TakeItem(*Item) == false)
+			{
+				// 아이템 얻기 실패
 
-			m_pInventoryComp->TakeItem(Item, Index);
+			}
+
 		}
 
-		m_CurrentInteractable->Interact_Implementation();
-
-		// 사용한 상호작용 객체는 현재상태에서 지워주기 [ 아이템의 경우 쓰고나면 현재 상호작용을 할이유가 ]
-		m_CurrentInteractable = nullptr;
+		// (추측) TakeItem에서 인벤토리로 주소를 넘겨주는 과정에서  nullptr로 처리가 되는게 아닐까 ?
+		if (m_CurrentInteractable != nullptr)
+		{
+			m_CurrentInteractable->Interact_Implementation();
+			// 사용한 상호작용 객체는 현재상태에서 지워주기 [ 아이템의 경우 쓰고나면 현재 상호작용을 할이유가 ]
+			m_CurrentInteractable = nullptr;
+		}
 	}
 
 }
@@ -445,116 +452,48 @@ void AMyTest_TopDownCharacter::CheckForInteractable()
 
 
 }
-/// <summary>
-/// 캐릭터 단에서 UseItem을 한다.
-/// </summary>
-/// <param name="Index">아이템 리스트에서의 번호 </param>
-void AMyTest_TopDownCharacter::UseItem(int32 Index)
-{
-	if (m_pInventoryComp == nullptr)
-		return;
-
-	// 일단 값들이 int32라서 배열로 쭉 받긴 하는데 이게 맞는지... 
-	TArray<int32> ItemEffect = m_pInventoryComp->UseItem(Index);
-	if (ItemEffect.IsEmpty() == false)
-	{
-		switch (ItemEffect[0])
-		{
-		case static_cast<int32>(EItemEffectType::PlusHP):
-		{
-			m_pStatComp->AddHP(ItemEffect[2]);
-			break;
-		}
-		case static_cast<int32>(EItemEffectType::PlusMP):
-		{
-			m_pStatComp->AddMP(ItemEffect[2]);
-			break;
-		}
-		case static_cast<int32>(EItemEffectType::PlusSP):
-		{
-			m_pStatComp->AddSP(ItemEffect[2]);
-			break;
-		}
-		case static_cast<int32>(EItemEffectType::PlusAttack):
-		{
-			FBaseStatusData Stat{};
-			Stat.Attack = ItemEffect[2];
-			m_pStatComp->AddBaseStat(Stat);
-
-			break;
-		}
-		case static_cast<int32>(EItemEffectType::PlusDefence):
-		{	
-			FBaseStatusData Stat{};
-			Stat.Defence = ItemEffect[2];
-			m_pStatComp->AddBaseStat(Stat);
-
-			break;
-		}
-
-		default:
-			break;
-		}
-
-	}
-
-	
-}
-/// <summary>
-/// 캐릭터 단에서 DropItem을 한다.
-/// </summary>
-/// <param name="Index"></param>
-/// <param name="Pos"></param>
-void AMyTest_TopDownCharacter::DropItem(int32 Index,FVector Pos)
-{
-	if (m_pInventoryComp == nullptr)
-		return;
-	m_pInventoryComp->DropItem(Index, Pos);
-
-
-}
 
 void AMyTest_TopDownCharacter::HUDUpdate(uint8 Type)
 {
-	AMyTest_TopDownGameMode* GameMode = CastChecked<AMyTest_TopDownGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	
+	AMyTest_TopDownPlayerController* PC = CastChecked<AMyTest_TopDownPlayerController>(GetController());
+
 	// TODO
-	switch (GameMode->GetHUDState())
+	switch (PC->GetHUDState())
 	{
-		case AMyTest_TopDownGameMode::EHUDState::EIngame :
+		case AMyTest_TopDownPlayerController::EHUDState::EIngame:
 		{
-			auto Widget = Cast<UMyHUD>(GameMode->GetCurrentWidget());
-			if (Widget)
+			auto Widget = Cast<UMyHUD>(PC->GetCurrentWidget());
+			if (Widget != nullptr)
 			{
 				Widget->BindHP(m_pStatComp);
 				Widget->UpdateHP();
 			}
 			break;
 		}
-		case AMyTest_TopDownGameMode::EHUDState::EInventory:
+		case AMyTest_TopDownPlayerController::EHUDState::EInventory:
 		{
-			auto Widget = Cast<UMyInventoryWidget>(GameMode->GetCurrentWidget());
-			if (Widget)
+			auto Widget = Cast<UMyInventoryWidget>(PC->GetCurrentWidget());
+			if (Widget != nullptr)
 			{
 				Widget->BindInventory(*m_pInventoryComp);
 				Widget->UpdateWidget();
 			}
 			break;
 		}
-		case AMyTest_TopDownGameMode::EHUDState::EShop:
+		case AMyTest_TopDownPlayerController::EHUDState::EShop:
 		{
 			break;
 		}
-		case AMyTest_TopDownGameMode::EHUDState::EStatus:
+		case AMyTest_TopDownPlayerController::EHUDState::EStatus:
 		{
-			auto Widget = Cast<UStatWidget>(GameMode->GetCurrentWidget());
-			if (Widget)
+			auto Widget = Cast<UStatWidget>(PC->GetCurrentWidget());
+			if (Widget != nullptr)
 			{
 				Widget->BindStat(*m_pStatComp);
 			}
 			break;
 		}
-		case AMyTest_TopDownGameMode::EHUDState::ESkill:
+		case AMyTest_TopDownPlayerController::EHUDState::ESkill:
 		{
 			break;
 		}
@@ -585,6 +524,12 @@ void AMyTest_TopDownCharacter::OnDeathMontageEnded()
 			if (nullptr != PC)
 			{
 				DisableInput(PC);
+
+				IGameInterface* GameInterface = Cast<IGameInterface>(GetWorld()->GetAuthGameMode());
+				if (GameInterface != nullptr)
+				{
+					GameInterface->OnPlayerDead();
+				}
 			}
 
 
@@ -629,8 +574,8 @@ void AMyTest_TopDownCharacter::Sprint()
 	if (m_CharacterState == EBehaviorState::Idle || m_CharacterState == EBehaviorState::Battle)
 	{
 		m_CharacterState = EBehaviorState::Running;
-		GetCharacterMovement()->MaxWalkSpeed = 1000.f;			// 캐릭터 이동속도	(임시) 상수는 바꿔야한다.
-		m_CameraBoom->CameraLagSpeed = 8.0f;					// 카메라 지연속도
+		GetCharacterMovement()->MaxWalkSpeed = (m_OriginMoveSpeed * 2.f);		// 캐릭터 이동속도	
+		m_CameraBoom->CameraLagSpeed = 8.0f;									// 카메라 지연속도
 
 	}
 }
@@ -661,4 +606,17 @@ float AMyTest_TopDownCharacter::TakeDamage(float DamageAmount, FDamageEvent cons
 
 	m_pStatComp->OnAttacked(DamageAmount);
 	return DamageAmount;
+}
+
+void AMyTest_TopDownCharacter::Debug()
+{
+	// Debug Off    goto BeginPlay() 
+	// 랜덤 기능 테스트  
+	URandomSystem* RandomObject = NewObject<URandomSystem>(GetWorld());
+	RandomObject->AddList
+	(
+		TMap<int32, int32>{ {0,20}, { 1,10 }, { 2,30 }, { 3,15 }, { 4,12 }, { 5,13 }}
+	);
+	FString str = FString::Printf(TEXT("%d"), RandomObject->PickRandom(100));
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::White,str);
 }

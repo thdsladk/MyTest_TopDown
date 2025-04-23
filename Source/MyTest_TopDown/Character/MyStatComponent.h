@@ -13,7 +13,7 @@ DECLARE_MULTICAST_DELEGATE(FOnMPChanged);
 DECLARE_MULTICAST_DELEGATE(FOnSPChanged);
 DECLARE_MULTICAST_DELEGATE(FOnDeathCheck);
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStatChanged, const FBaseStatusData& /*BaseStat*/, const FBaseStatusData& /*ModifierStat*/);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStatChanged, const FBaseStatusData& BaseStat, const FBaseStatusData& ModifierStat);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -26,8 +26,6 @@ public:
 	UMyStatComponent();
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
 	virtual void InitializeComponent() override;
 
 public:	
@@ -36,6 +34,7 @@ public:
 	FORCEINLINE int32 GetAttack() { return (m_BaseStat.Attack + m_ModifierStat.Attack); }
 	FORCEINLINE const FBaseStatusData& GetBaseStat() { return m_BaseStat; };
 	FORCEINLINE	const FBaseStatusData& GetModifierStat() { return m_ModifierStat; }
+	FORCEINLINE FBaseStatusData GetTotalStat() { return m_BaseStat + m_ModifierStat; }
 
 	void SetLevel(int32 Level);
 	void SetBaseAttack (int32 Attack);

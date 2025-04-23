@@ -20,7 +20,7 @@ EBTNodeResult::Type UBTTask_Defence::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 	
 	// Set Defense State
 	BI->OnDefense();
-	FOnDefenseEnd Delegate;
+	FOnBehaviorDefenseEnd Delegate;
 	Delegate.AddLambda([&]()
 		{
 			// ::NPC::안에서 제어할 때는 여기서 쓴다.
@@ -41,7 +41,8 @@ EBTNodeResult::Type UBTTask_Defence::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		GetWorld()->GetTimerManager().SetTimer(m_hDuration, [&]()
 			{
 				// ::AI::안에서 제어할 때는 여기서 쓴다.
-				BI->StopDefense();
+				IBehaviorInterface* _BI = CastChecked<IBehaviorInterface>(OwnerComp.GetAIOwner()->GetPawn());
+				_BI->StopDefense();
 				OwnerComp.GetBlackboardComponent()->SetValueAsEnum(TEXT("BattleCommand"), NULL);
 				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 			}, m_DurationTime, false);
