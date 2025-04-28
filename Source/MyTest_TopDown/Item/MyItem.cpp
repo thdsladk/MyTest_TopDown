@@ -31,6 +31,7 @@ void AMyItem::SetItem(int32 ID)
 		{
 			m_ItemInfo.ID = ItemData->ID;
 			m_ItemInfo.Type = ItemData->Type;
+			m_ItemInfo.EquipmentPart = ItemData->EquipmentPart;
 			m_ItemInfo.Name = ItemData->Name;
 			m_ItemInfo.Description = ItemData->Description;
 			m_ItemInfo.MaxCount = ItemData->MaxCount;
@@ -113,17 +114,12 @@ void AMyItem::OnPickedUp()
 {
 	// OFF 상태로 숨겨주기 . 
 	AMyInteractable::m_Effect->Activate(true);
-
-
 	m_IsGround = false;
 
-	m_bVisiable = false;
-
-	m_HelpTextComp->SetVisibility(m_bVisiable);
-	//m_HelpTextComp->SetActive(false);
-
+	// 아이템 가려주는 부분.
 	SetHidden(true);
 
+	// 트리거 세팅 
 	m_Trigger->SetSimulatePhysics(false);
 	m_Trigger->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
@@ -138,12 +134,17 @@ void AMyItem::Replace(const FVector Pos)
 	// 부모가 가지고 있는 멤버들 세팅
 	Super::Replace(Pos);
 	// 자식이 가지고 있는 멤버들 세팅
+	SetOwner(nullptr);	// 소유권 돌려주기 
 	m_MeshComp->SetWorldScale3D(m_MeshComp->GetComponentScale() * m_ItemInfo.Scale);	// 스케일 두배로.
 	m_IsGround = true;
 }
 
 void AMyItem::SetHidden(bool bHide)
 {
+	m_bVisiable = !bHide;
+	m_HelpTextComp->SetVisibility(!bHide);
+
+
 	m_MeshComp->SetVisibility(!bHide);
 	m_MeshComp->SetSimulatePhysics(!bHide);
 	m_MeshComp->SetHiddenInGame(bHide);

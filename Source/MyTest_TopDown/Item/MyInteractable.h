@@ -63,9 +63,9 @@ protected:
 	TObjectPtr<class UNiagaraComponent> m_Effect;
 
 	UPROPERTY(VisibleAnywhere, Category = Boolean)
-	bool m_bVisiable;
+	uint8 m_bVisiable : 1;
 	UPROPERTY(VisibleAnywhere, Category = Boolean)
-	bool m_bInCharacter;
+	uint8 m_bInCharacter : 1;
 
 
 

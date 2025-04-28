@@ -66,9 +66,13 @@ void AMyEquipment::Equip()
 	if (m_IsEquip == false)
 	{
 		m_IsEquip = true;
-		//SwitchVisiable();
+
+		// SetHiden을 쓰지 않는거는 Tooltip은 활성화 시키면 안되어서 이다. 
 		m_bVisiable = true;
-		SetHidden(!m_bVisiable);
+
+		//m_MeshComp->SetVisibility(!m_bVisiable);
+		//m_MeshComp->SetSimulatePhysics(!m_bVisiable);
+		//m_MeshComp->SetHiddenInGame(m_bVisiable);
 	}
 
 }
@@ -78,9 +82,12 @@ void AMyEquipment::UnEquip()
 	if (m_IsEquip == true)
 	{
 		m_IsEquip = false;
-		//SwitchVisiable();
+
 		m_bVisiable = false;
-		SetHidden(!m_bVisiable);
+
+		//m_MeshComp->SetVisibility(!m_bVisiable);
+		//m_MeshComp->SetSimulatePhysics(!m_bVisiable);
+		//m_MeshComp->SetHiddenInGame(m_bVisiable);
 	}
 }
 

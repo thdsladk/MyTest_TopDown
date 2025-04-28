@@ -15,6 +15,7 @@ public:
 	// Sets default values for this actor's properties
 	AMyEquipment();
 
+	EEquipmentPart GetEquipmentPart() { return m_ItemInfo.EquipmentPart; }
 	void SetEquipment(int32 ID);
 	virtual void SetItem(int32 ID) override;
 
