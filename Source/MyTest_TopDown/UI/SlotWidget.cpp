@@ -9,12 +9,12 @@
 #include "Input/Reply.h"
 
 #include "MyTest_TopDownCharacter.h"
-#include "MyInventoryComponent.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 
 #include "Character/MyTest_TopDownPlayerController.h"
-#include "MyInventoryWidget.h"
-#include "InventoryInterface.h"
+#include "UI/MyInventoryWidget.h"
+#include "Interface/InventoryInterface.h"
+#include "CharacterComponent/MyInventoryComponent.h"
 
 
 bool USlotWidget::Initialize()
@@ -167,9 +167,8 @@ FReply USlotWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPo
     {
         if (m_SlotType == ESlotType::EquipmentSlot)
         {
-           // 자동으로 장비를 벗고 아이템 슬롯으로 다시 들어가도록 하는 시스템 필요
-           // m_InventoryComp->SetEquipmentRef(m_SlotIndex, EmptyIndex);
-           // UpdateWidget();
+           // 자동으로 장비를 벗고 아이템 슬롯으로 다시 들어가도록 한다.
+           m_InventoryComp->UnEquip(m_SlotIndex);
         }
         else if (m_SlotType == ESlotType::ItemSlot)
         {
@@ -178,10 +177,11 @@ FReply USlotWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPo
             if (Pawn != nullptr)
             {
                 CastChecked<IInventoryInterface>(Pawn)->DropItem(m_SlotIndex, {Pawn->GetTransform().GetLocation() + FVector(0.0, 0.0, 10.0)});
-                UpdateWidget();
+                
             }
         }
 
+        UpdateWidget();
         //Debug
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, TEXT("Drag : Right Button Up"));
     }
@@ -210,6 +210,8 @@ FReply USlotWidget::NativeOnMouseButtonDoubleClick(const FGeometry& InGeometry, 
                 CastChecked<IInventoryInterface>(Pawn)->UseItem(m_SlotIndex);
             }
         }
+
+        UpdateWidget();
         //Debug
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Black, TEXT("Drag : Left Double Click"));
     }
@@ -257,7 +259,14 @@ bool USlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent
     ESlotType DragSlotType = static_cast<ESlotType>(CastChecked<UDragSlotWidget>(InOperation)->GetType());
     if (m_SlotType == ESlotType::ItemSlot)
     {
-        m_InventoryComp->SwapInventory(DragSlotIndex, m_SlotIndex);  
+        if (DragSlotType == ESlotType::ItemSlot)
+        {
+            m_InventoryComp->SwapInventory(DragSlotIndex, m_SlotIndex); 
+        }
+        else if (DragSlotType == ESlotType::EquipmentSlot)
+        {
+            m_InventoryComp->UnEquip(DragSlotIndex, m_SlotIndex);
+        }
     }
     else if (m_SlotType == ESlotType::EquipmentSlot)
     {
@@ -280,7 +289,9 @@ bool USlotWidget::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent
         }
         
     }
-    
+
+    UpdateWidget();
+
     // Debug Message
     GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, TEXT("Drop : Dropping"));
 
